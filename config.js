@@ -1,5 +1,0 @@
-window.FORMS={
-rif:{title:"Receipt Inspection Form",sectionTitle:"Receipt Inspection Form",backgroundImage:"transformer.jpg",buttons:[{text:"AWS Specification in Procore",href:"https://us02.procore.com/562949954782917/project/specification_section_revisions/562949964910470"},{text:"Receipt Inspection Form",href:"https://aceelectricnet.sharepoint.com/:x:/s/CMH098QAQC/IQAhHq6etUBsS5ScdXET7j76AdWnnhlAbghphCqBeeZeH9o"}],completedKey:"rifCompleted"},
-lvt:{title:"LVT Meg Cover Sheet",sectionTitle:"Megohmmeter Testing of Conductors",backgroundImage:"transformer.jpg",buttons:[{text:"Line Side",href:"https://aceelectricnet.sharepoint.com/:x:/s/CMH098QAQC/IQB4zdld_DAmQbY4VOAUXcHmAf7SmDkVDGCEPduYPqKKEXY"},{text:"Load Side",href:"https://aceelectricnet.sharepoint.com/:x:/s/CMH098QAQC/IQBlhLsuvA8USp7ZzFiuyGW1Aa7TZBcVpZ4BvtoWGNR62AM"}],completedKey:"lvtMegCompleted"},
-phenolic:{title:"Phenolic Display",sectionTitle:"Phenolic Display",backgroundImage:"transformer.jpg",buttons:[{text:"Specification",href:"#"}],completedKey:"phenolicCompleted"}
-};
