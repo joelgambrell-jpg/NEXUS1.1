@@ -227,15 +227,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  // ✅ ADD: Auth imports
-  import { getAuth, signInAnonymously, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // ✅ ADD: Anonymous sign-in (required for your signedIn() rules)
-  const auth = getAuth(app);
 
   const saveBtn = document.getElementById("saveBtn");
   const clearBtn = document.getElementById("clearBtn");
@@ -321,3 +312,4 @@
 </script>
 </body>
 </html>
+
