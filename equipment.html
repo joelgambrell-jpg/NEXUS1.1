@@ -62,7 +62,7 @@
   document.getElementById("eqLabel").textContent = eq ? `Equipment: ${eq}` : "Missing equipment ID (eq)";
 
   function link(id){
-    return `form.html?id=${encodeURIComponent(id)}${eq ? `&eq=${encodeURIComponent(eq)}` : ""}`;
+    return `task.html?id=${encodeURIComponent(id)}${eq ? `&eq=${encodeURIComponent(eq)}` : ""}`;
   }
 
   document.getElementById("rifBtn").href = link("rif");
@@ -77,3 +77,4 @@
 </script>
 </body>
 </html>
+
