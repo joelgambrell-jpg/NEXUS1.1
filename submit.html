@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NEXUS Submit</title>
+
+<style>
+  :root{
+    --bg:#b60000;
+    --panel:rgba(255,255,255,0.20);
+    --accent:#00c2ff;
+    --btn-bg:#0a0f24;
+    --btn-txt:#3ecbff;
+    --ok:#39ff14;
+    --bad:#ff5252;
+    --gray:rgba(80,80,80,0.65);
+  }
+
+  body{
+    margin:0;
+    padding:0;
+    font-family:Arial, sans-serif;
+    color:#fff;
+    background:var(--bg);
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+
+  .container{
+    max-width:900px;
+    margin:40px auto;
+    background:var(--panel);
+    padding:30px;
+    border-radius:18px;
+    backdrop-filter:blur(6px);
+    text-align:center;
+  }
+
+  .back{
+    color:#fff;
+    text-decoration:none;
+    font-weight:bold;
+    display:inline-block;
+    margin-bottom:20px;
+  }
+
+  h1{
+    font-size:32px;
+    font-weight:700;
+    margin:0;
+  }
+
+  .meta{
+    margin:10px 0 18px;
+    font-weight:900;
+    font-size:18px;
+  }
+
+  .section-title{
+    font-size:18px;
+    font-weight:900;
+    margin:18px 0 10px;
+    border-bottom:2px solid #fff;
+    padding-bottom:6px;
+    text-align:left;
+  }
+
+  .panel{
+    display:block;
+    background: var(--gray);
+    padding: 22px;
+    border-radius: 18px;
+    text-align:left;
+  }
+
+  label{
+    display:block;
+    font-weight:900;
+    margin:14px 0 8px;
+  }
+
+  input[type="text"], textarea, select{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    padding:12px 12px;
+    border-radius:12px;
+    border:0;
+    outline:none;
+    font-size:16px;
+  }
+
+  textarea{
+    min-height:140px;
+    resize:vertical;
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:720px){
+    .row{ grid-template-columns:1fr; }
+  }
+
+  .btn{
+    display:inline-block;
+    margin:18px 10px 0 0;
+    padding:14px 26px;
+    font-size:18px;
+    font-weight:800;
+    border-radius:999px;
+    text-decoration:none;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+  }
+
+  .btn:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+  }
+
+  .status{
+    margin-top:14px;
+    font-weight:900;
+  }
+  .status.ok{ color: var(--ok); }
+  .status.bad{ color: var(--bad); }
+
+  .hint{
+    margin-top:10px;
+    opacity:0.9;
+    font-size:14px;
+    line-height:1.35;
+  }
+
+  footer{
+    margin-top:18px;
+    font-size:0.9em;
+    opacity:0.85;
+    text-align:center;
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <a class="back" id="backLink" href="equipment.html">← Back</a>
+
+  <h1 id="pageTitle">Submit</h1>
+  <div class="meta" id="metaLine"></div>
+
+  <div class="section-title">Submission</div>
+  <div class="panel">
+    <div class="row">
+      <div>
+        <label for="taskId">Task</label>
+        <input id="taskId" type="text" readonly>
+      </div>
+      <div>
+        <label for="equipmentId">Equipment</label>
+        <input id="equipmentId" type="text" readonly>
+      </div>
+    </div>
+
+    <label for="statusSelect">Status</label>
+    <select id="statusSelect">
+      <option value="complete">Complete</option>
+      <option value="in_progress">In Progress</option>
+      <option value="issue">Issue / Needs Attention</option>
+    </select>
+
+    <label for="notes">Notes</label>
+    <textarea id="notes" placeholder="Enter notes (measurements, issues found, actions taken, etc.)"></textarea>
+
+    <label for="techName">Technician Name (optional)</label>
+    <input id="techName" type="text" placeholder="Name">
+
+    <button class="btn" id="saveBtn">Save to Firebase</button>
+    <button class="btn" id="clearBtn" type="button">Clear</button>
+
+    <div class="status" id="statusMsg"></div>
+
+    <div class="hint">
+      URL format expected:<br>
+      <code>submit.html?form=rif&amp;eq=TR-001</code><br>
+      This page writes to Firestore collection <code>submissions</code> with fields: eq, formId, status, notes, techName, createdAt, pageUrl.
+    </div>
+  </div>
+
+  <footer>
+    © Intellectual Property of NEXUS Data Science. Created in joint venture with ACE Electric. All rights reserved.
+  </footer>
+</div>
+
+<script type="module">
+  // =========================
+  // 1) Read URL params
+  // =========================
+  const qs = new URLSearchParams(location.search);
+  const formId = (qs.get("form") || qs.get("id") || "").trim(); // supports ?form= and ?id=
+  const eq = (qs.get("eq") || "").trim();
+
+  // Back link: return to equipment page with eq preserved
+  const backLink = document.getElementById("backLink");
+  backLink.href = `equipment.html${eq ? `?eq=${encodeURIComponent(eq)}` : ""}`;
+
+  // Page labels
+  const pageTitle = document.getElementById("pageTitle");
+  const metaLine = document.getElementById("metaLine");
+  document.getElementById("taskId").value = formId || "";
+  document.getElementById("equipmentId").value = eq || "";
+
+  pageTitle.textContent = formId ? `Submit: ${formId.toUpperCase()}` : "Submit";
+  metaLine.textContent = eq ? `Equipment: ${eq}` : "";
+
+  // =========================
+  // 2) Firebase setup
+  // =========================
+  // Paste your Firebase web app config here (Firebase Console → Project settings → Your apps → Config)
+  const firebaseConfig = {
+    apiKey: "PASTE_API_KEY",
+    authDomain: "PASTE_AUTH_DOMAIN",
+    projectId: "PASTE_PROJECT_ID",
+    storageBucket: "PASTE_STORAGE_BUCKET",
+    messagingSenderId: "PASTE_SENDER_ID",
+    appId: "PASTE_APP_ID"
+  };
+
+  // SDK imports
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // =========================
+  // 3) Save submission
+  // =========================
+  const saveBtn = document.getElementById("saveBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const statusMsg = document.getElementById("statusMsg");
+
+  function setStatus(text, type){
+    statusMsg.textContent = text || "";
+    statusMsg.className = "status" + (type ? ` ${type}` : "");
+  }
+
+  function validate(){
+    if (!formId) return "Missing form/task id. Use ?form=rif or ?id=rif";
+    if (!eq) return "Missing equipment id. Use ?eq=TR-001";
+    return "";
+  }
+
+  async function save(){
+    const err = validate();
+    if (err){
+      setStatus(err, "bad");
+      return;
+    }
+
+    const payload = {
+      eq,
+      formId,
+      status: document.getElementById("statusSelect").value,
+      notes: document.getElementById("notes").value.trim(),
+      techName: document.getElementById("techName").value.trim(),
+      createdAt: serverTimestamp(),
+      pageUrl: location.href,
+      userAgent: navigator.userAgent
+    };
+
+    saveBtn.disabled = true;
+    setStatus("Saving…", "");
+
+    try{
+      await addDoc(collection(db, "submissions"), payload);
+      setStatus("Saved to Firebase.", "ok");
+    } catch(e){
+      console.error(e);
+      setStatus("Error saving to Firebase. Check console + Firebase rules.", "bad");
+    } finally{
+      saveBtn.disabled = false;
+    }
+  }
+
+  function clear(){
+    document.getElementById("statusSelect").value = "complete";
+    document.getElementById("notes").value = "";
+    document.getElementById("techName").value = "";
+    setStatus("", "");
+  }
+
+  saveBtn.addEventListener("click", save);
+  clearBtn.addEventListener("click", clear);
+
+  // Optional: auto-warn if missing params
+  const initialErr = validate();
+  if (initialErr) setStatus(initialErr, "bad");
+</script>
+</body>
+</html>
