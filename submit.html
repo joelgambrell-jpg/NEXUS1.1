@@ -165,7 +165,7 @@
       </div>
       <div>
         <label for="equipmentId">Equipment</label>
-        <input id="equipmentId" type="text"/label>
+        <input id="equipmentId" type="text" />
       </div>
     </div>
 
@@ -182,7 +182,7 @@
     <label for="techName">Technician Name (optional)</label>
     <input id="techName" type="text" placeholder="Name">
 
-    <button class="btn" id="saveBtn">Save to Firebase</button>
+    <button class="btn" id="saveBtn" type="button">Save to Firebase</button>
     <button class="btn" id="clearBtn" type="button">Clear</button>
 
     <div class="status" id="statusMsg"></div>
@@ -204,26 +204,35 @@
   // 1) Read URL params
   // =========================
   const qs = new URLSearchParams(location.search);
-  const formId = (qs.get("form") || qs.get("id") || "").trim(); // supports ?form= and ?id=
-  const eq = (qs.get("eq") || "").trim();
+  const initialFormId = (qs.get("form") || qs.get("id") || "").trim(); // supports ?form= and ?id=
+  const initialEq = (qs.get("eq") || "").trim();
 
-  // Back link: return to equipment page with eq preserved
+  // Elements
   const backLink = document.getElementById("backLink");
-  backLink.href = `equipment.html${eq ? `?eq=${encodeURIComponent(eq)}` : ""}`;
-
-  // Page labels
   const pageTitle = document.getElementById("pageTitle");
   const metaLine = document.getElementById("metaLine");
-  document.getElementById("taskId").value = formId || "";
-  document.getElementById("equipmentId").value = eq || "";
+  const taskEl = document.getElementById("taskId");
+  const eqEl = document.getElementById("equipmentId");
 
-  pageTitle.textContent = formId ? `Submit: ${formId.toUpperCase()}` : "Submit";
-  metaLine.textContent = eq ? `Equipment: ${eq}` : "";
+  // Populate fields
+  taskEl.value = initialFormId || "";
+  eqEl.value = initialEq || "";
+
+  // Page labels
+  pageTitle.textContent = initialFormId ? `Submit: ${initialFormId.toUpperCase()}` : "Submit";
+  metaLine.textContent = initialEq ? `Equipment: ${initialEq}` : "";
+
+  // Back link (updates based on current equipment input)
+  function updateBackLink(){
+    const eqVal = eqEl.value.trim();
+    backLink.href = `equipment.html${eqVal ? `?eq=${encodeURIComponent(eqVal)}` : ""}`;
+  }
+  updateBackLink();
+  eqEl.addEventListener("input", updateBackLink);
 
   // =========================
   // 2) Firebase setup
   // =========================
-  // Paste your Firebase web app config here (Firebase Console → Project settings → Your apps → Config)
   const firebaseConfig = {
     apiKey: "AIzaSyClHD9dkDCMIznznNq8xw8SCtk21DP0TCo",
     authDomain: "nexus-static-8304.firebaseapp.com",
@@ -233,7 +242,6 @@
     appId: "1:12477389172:web:22b4d78e6bc2d6dbdbf421"
   };
 
-  // SDK imports
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -253,8 +261,10 @@
   }
 
   function validate(){
-    if (!formId) return "Missing form/task id. Use ?form=rif or ?id=rif";
-    if (!eq) return "Missing equipment id. Use ?eq=TR-001";
+    const formVal = taskEl.value.trim();
+    const eqVal = eqEl.value.trim();
+    if (!formVal) return "Missing form/task id. Use ?form=rif or ?id=rif";
+    if (!eqVal) return "Missing equipment id. Use ?eq=TR-001 (or type it above)";
     return "";
   }
 
@@ -266,8 +276,8 @@
     }
 
     const payload = {
-      eq,
-      formId,
+      eq: eqEl.value.trim(),
+      formId: taskEl.value.trim(),
       status: document.getElementById("statusSelect").value,
       notes: document.getElementById("notes").value.trim(),
       techName: document.getElementById("techName").value.trim(),
@@ -284,7 +294,7 @@
       setStatus("Saved to Firebase.", "ok");
     } catch(e){
       console.error(e);
-      setStatus("Error saving to Firebase. Check console + Firebase rules.", "bad");
+      setStatus(`Error saving: ${e.code || ""} ${e.message || e}`, "bad");
     } finally{
       saveBtn.disabled = false;
     }
@@ -300,11 +310,9 @@
   saveBtn.addEventListener("click", save);
   clearBtn.addEventListener("click", clear);
 
-  // Optional: auto-warn if missing params
+  // Auto-warn if missing params/inputs
   const initialErr = validate();
   if (initialErr) setStatus(initialErr, "bad");
 </script>
 </body>
 </html>
-
-
