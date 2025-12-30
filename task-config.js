@@ -32,8 +32,9 @@ window.TASKS = {
     links: [
       {
         text: "Torque Log",
-        href: "https://NEW_LINK_HERE"
+        href: "submit.html?form=torque"
       }
     ]
   }
 };
+
