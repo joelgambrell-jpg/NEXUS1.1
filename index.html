@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NEXUS 2.0</title>
+
+<style>
+  :root {
+    --bg: #b60000;
+    --panel: rgba(255, 255, 255, 0.25);
+    --btn-bg: #ffffffdd;
+    --btn-color: #000;
+    --btn-hover-bg: #fff;
+    --btn-hover-color: #b60000;
+    --neon: #00ff66;
+  }
+
+  html, body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #fff;
+    background: var(--bg);
+  }
+
+  .background-image {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  main.container {
+    width: 100%;
+    max-width: 960px;
+    background: var(--panel);
+    padding: 28px;
+    border-radius: 18px;
+    backdrop-filter: blur(6px);
+    text-align: center;
+  }
+
+  h1 img {
+    max-width: 380px;
+    margin: 0 auto 18px;
+    display: block;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .btn-wrapper { position: relative; }
+
+  .btn {
+    width: 100%;
+    height: 60px;
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    border: 2px solid #ff0000;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    transition: 0.2s;
+    box-shadow: 0 0 12px #ff0000;
+    gap: 8px;
+  }
+
+  .btn:hover {
+    background: var(--btn-hover-bg);
+    color: var(--btn-hover-color);
+    transform: translateY(-2px);
+  }
+
+  .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .btn-wrapper:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .dropdown-menu {
+    margin-top: 12px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .dropdown-menu.show {
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .pyramid {
+    grid-template-columns: repeat(12, 1fr);
+    justify-items: stretch;
+    align-items: stretch;
+  }
+
+  .pyramid > .btn-wrapper { grid-column: span var(--colspan, 4); }
+
+  .pyramid-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+  }
+
+  .pyramid-row > .btn-wrapper { grid-column: span var(--colspan, 4); }
+
+  @media (max-width: 700px) {
+    .pyramid { grid-template-columns: 1fr; }
+    .pyramid-row { grid-template-columns: 1fr; }
+    .pyramid > .btn-wrapper,
+    .pyramid-row > .btn-wrapper { grid-column: auto !important; }
+  }
+
+  .btn-special {
+    background: #39ff14;
+    font-size: 20px;
+    padding: 20px 32px;
+    border-radius: 14px;
+    font-weight: 800;
+    margin-top: 20px;
+  }
+
+  footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    font-size: 16px;
+  }
+</style>
+</head>
+
+<body>
+
+<img class="background-image" src="transformer.jpg" alt="Transformer Diagram">
+
+<div class="page-wrap">
+<main class="container">
+
+<h1><img src="nexus.png" alt="NEXUS Logo"></h1>
+
+<button class="btn" id="dropdownToggle">Show Tasks to Complete ▼</button>
+
+<div id="dropdownMenu" class="dropdown-menu">
+  <section class="grid pyramid" id="tasksGrid">
+    <div class="btn-wrapper">
+      <a class="btn" href="form.html?id=rif" target="_blank">RIF</a>
+      <span class="tooltip">Review the RIF task</span>
+    </div>
+    <div class="btn-wrapper">
+      <a class="btn" href="form.html?id=lvt" target="_blank">Megohmmeter Testing</a>
+      <span class="tooltip">Complete Megohmmeter Testing</span>
+    </div>
+    <div class="btn-wrapper">
+      <a class="btn" href="form.html?id=torque" target="_blank">Torque</a>
+      <span class="tooltip">View Torque resources</span>
+    </div>
+    <div class="btn-wrapper">
+      <a class="btn" href="form.html?id=l2" target="_blank">L2-IVF</a>
+      <span class="tooltip">Complete L2-IVF</span>
+    </div>
+    <div class="btn-wrapper">
+      <a class="btn" href="form.html?id=prefod" target="_blank">Pre-FOD</a>
+      <span class="tooltip">Complete Pre-FOD</span>
+    </div>
+  </section>
+</div>
+
+<div style="margin-top:20px">
+  <button class="btn" id="supportingToggle">Supporting Documents ▼</button>
+
+  <div id="supportingDropdown" class="dropdown-menu">
+    <section class="grid pyramid" id="supportingGrid">
+      <div class="btn-wrapper">
+        <a class="btn" href="form.html?id=transformer" target="_blank">🖼️ Transformer Image</a>
+        <span class="tooltip">Open transformer image/resources</span>
+      </div>
+      <div class="btn-wrapper">
+        <a class="btn" href="form.html?id=supporting" target="_blank">📄 Supporting Documents Page</a>
+        <span class="tooltip">Open the supporting documents hub</span>
+      </div>
+      <div class="btn-wrapper">
+        <a class="btn" href="https://aceelectricnet.sharepoint.com/:f:/s/CMH098QAQC/IgDTzSdCCowiQJ0Rza9oIXlUASycInMyNn5KL8kpLPbjxkU?e=9fAnPb" target="_blank">📊 Training PowerPoint Documents</a>
+        <span class="tooltip">Open training PowerPoint folder</span>
+      </div>
+      <div class="btn-wrapper">
+        <a class="btn" href="https://aceelectricnet.sharepoint.com/:f:/s/CMH098QAQC/IgAuRbIpwO8IQog9sZN4umvUAb8FLYz2qqSu8oOUvYa1Yq4?e=QHL9IJ" target="_blank">📁 Supporting Documentation Repository</a>
+        <span class="tooltip">Open supporting documentation repository</span>
+      </div>
+      <div class="btn-wrapper">
+        <a class="btn" href="https://aceelectricnet.sharepoint.com/:f:/s/CMH098QAQC/IgAQM-row4waQbd2QWYR27mvAYSIW3WLiCt2W0EwVWlYsng?e=Brrj7W" target="_blank">📘 SOP General Folder</a>
+        <span class="tooltip">Open SOP general folder</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div style="display:flex;justify-content:center;">
+  <a class="btn btn-special" href="form.html?id=construction" target="_blank">
+    Construction Check Sheet
+  </a>
+</div>
+
+</main>
+</div>
+
+<footer>
+© Intellectual Property of NEXUS Data Science. Created in joint venture with ACE Electric. All rights reserved.
+</footer>
+
+<script>
+  const dropdownToggle = document.getElementById('dropdownToggle');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const supportingToggle = document.getElementById('supportingToggle');
+  const supportingDropdown = document.getElementById('supportingDropdown');
+
+  dropdownToggle.onclick = () => {
+    dropdownMenu.classList.toggle('show');
+    dropdownToggle.textContent =
+      dropdownMenu.classList.contains('show')
+        ? 'Hide Tasks to Complete ▲'
+        : 'Show Tasks to Complete ▼';
+  };
+
+  supportingToggle.onclick = () => {
+    supportingDropdown.classList.toggle('show');
+    supportingToggle.textContent =
+      supportingDropdown.classList.contains('show')
+        ? 'Supporting Documents ▲'
+        : 'Supporting Documents ▼';
+  };
+
+  function applyPyramid(sectionEl) {
+    if (!sectionEl) return;
+    const items = Array.from(sectionEl.children).filter(el => el.classList.contains('btn-wrapper'));
+    sectionEl.innerHTML = '';
+    const pattern = [3, 2, 1];
+    let idx = 0;
+    let pat = 0;
+
+    while (idx < items.length) {
+      const want = pattern[pat] || 1;
+      const take = Math.min(want, items.length - idx);
+
+      const row = document.createElement('div');
+      row.className = 'pyramid-row';
+
+      const span = Math.floor(12 / take);
+
+      for (let i = 0; i < take; i++) {
+        const it = items[idx + i];
+        it.style.setProperty('--colspan', span);
+        row.appendChild(it);
+      }
+
+      if (take === 1) {
+        const left = document.createElement('div');
+        left.style.gridColumn = 'span 3';
+        const right = document.createElement('div');
+        right.style.gridColumn = 'span 3';
+        const only = row.children[0];
+        only.style.gridColumn = 'span 6';
+        row.insertBefore(left, only);
+        row.appendChild(right);
+      }
+
+      sectionEl.appendChild(row);
+
+      idx += take;
+      pat = Math.min(pat + 1, pattern.length - 1);
+    }
+  }
+
+  applyPyramid(document.getElementById('tasksGrid'));
+  applyPyramid(document.getElementById('supportingGrid'));
+</script>
+
+</body>
+</html>

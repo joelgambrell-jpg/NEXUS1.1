@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LVT Meg Cover Sheet</title>
+
+<style>
+body{
+  margin:0;
+  padding:0;
+  font-family:Arial, sans-serif;
+  color:#fff;
+
+  background-color:#b60000;
+  background-image:url("transformer.jpg"); 
+  background-repeat:no-repeat;
+  background-position:center center;
+  background-size:cover;
+  background-attachment:fixed;
+}
+
+.container{
+  max-width:900px;
+  margin:40px auto;
+  background:rgba(255,255,255,0.20);
+  padding:30px;
+  border-radius:18px;
+  backdrop-filter:blur(6px);
+  text-align:center;
+}
+
+h1{
+  font-size:32px;
+  font-weight:700;
+  margin-top:0;
+}
+
+.section-title{
+  font-size:22px;
+  font-weight:bold;
+  margin:20px 0 8px;
+  border-bottom:2px solid #fff;
+  padding-bottom:6px;
+}
+
+.back{
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+  display:inline-block;
+  margin-bottom:20px;
+}
+
+.btn{
+  display:inline-block;
+  margin:20px 0;
+  padding:16px 50px;
+  font-size:22px;
+  font-weight:700;
+  border-radius:999px;
+  text-decoration:none;
+  color:#3ecbff;
+  background:#0a0f24;
+  border:2px solid #00c2ff;
+  box-shadow:
+    0 0 8px  #00c2ff,
+    0 0 16px #00c2ff,
+    0 0 30px #00c2ff,
+    inset 0 0 10px rgba(0,194,255,0.4);
+  transition:0.2s ease;
+}
+
+.btn:hover{
+  box-shadow:
+    0 0 12px #29d9ff,
+    0 0 25px #29d9ff,
+    0 0 45px #29d9ff,
+    inset 0 0 14px rgba(0,194,255,0.55);
+  transform:translateY(-3px);
+  color:#6eeaff;
+}
+
+.photo-block{
+  position:relative;
+  width:100%;
+  margin:30px 0;
+}
+
+.hero-img{
+  width:100%;
+  border-radius:18px;
+}
+
+.center-buttons{
+  background: rgba(80, 80, 80, 0.65);
+  padding: 40px 60px;   /* ↑ bigger box */
+  border-radius: 24px;
+  backdrop-filter: blur(4px);
+  text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<a class="back" href="index.html">← Back to Home</a>
+
+<h1>LVT Meg Cover Sheet</h1>
+
+<div class="section-title">Megohmmeter Testing of Conductors</div>
+
+<div class="photo-block">
+
+  <div class="center-buttons">
+    <a class="btn"
+       href="https://aceelectricnet.sharepoint.com/:x:/s/CMH098QAQC/IQB4zdld_DAmQbY4VOAUXcHmAf7SmDkVDGCEPduYPqKKEXY?e=qZ6OKd"
+       target="_blank" rel="noopener noreferrer">
+       Line Side
+    </a>
+
+    <a class="btn"
+       href="https://aceelectricnet.sharepoint.com/:x:/s/CMH098QAQC/IQBlhLsuvA8USp7ZzFiuyGW1Aa7TZBcVpZ4BvtoWGNR62AM?e=nBgi82"
+       target="_blank" rel="noopener noreferrer">
+       Load Side
+    </a>
+  </div>
+</div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      localStorage.setItem('lvt-meg-cover-sheetCompleted', 'true');
+    });
+  });
+</script>
+
+</body>
+</html>
