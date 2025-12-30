@@ -41,7 +41,7 @@ window.FORMS = {
     buttons: [
       {
         text: "Torque Application Log",
-        href: "https://aceelectricnet.sharepoint.com/:x:/s/CMH098QAQC/EVrbtKJRuz9Eg22YwtJXf5kBW4lydgeaxGPdTGDQf_EYkw?e=cN7vVe"
+        href: "submit.html?form=torque"
       },
       {
         text: "Manufacturer Torque Specifications (Submittal)",
