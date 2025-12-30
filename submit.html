@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>NEXUS Submit</title>
+
 <style>
   :root{
     --bg:#b60000;
@@ -15,37 +16,134 @@
     --bad:#ff5252;
     --gray:rgba(80,80,80,0.65);
   }
-  body{ margin:0; padding:0; font-family:Arial, sans-serif; color:#fff; background:var(--bg);
-    background-repeat:no-repeat; background-position:center center; background-size:cover; background-attachment:fixed; }
-  .container{ max-width:900px; margin:40px auto; background:var(--panel); padding:30px; border-radius:18px;
-    backdrop-filter:blur(6px); text-align:center; }
-  .back{ color:#fff; text-decoration:none; font-weight:bold; display:inline-block; margin-bottom:20px; }
+
+  body{
+    margin:0; padding:0;
+    font-family:Arial, sans-serif;
+    color:#fff;
+    background:var(--bg);
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+
+  .container{
+    max-width:900px;
+    margin:40px auto;
+    background:var(--panel);
+    padding:30px;
+    border-radius:18px;
+    backdrop-filter:blur(6px);
+    text-align:center;
+  }
+
+  .back{
+    color:#fff;
+    text-decoration:none;
+    font-weight:bold;
+    display:inline-block;
+    margin-bottom:20px;
+  }
+
   h1{ font-size:32px; font-weight:700; margin:0; }
-  .meta{ margin:10px 0 18px; font-weight:900; font-size:18px; }
-  .section-title{ font-size:18px; font-weight:900; margin:18px 0 10px; border-bottom:2px solid #fff;
-    padding-bottom:6px; text-align:left; }
-  .panel{ display:block; background: var(--gray); padding: 22px; border-radius: 18px; text-align:left; }
-  label{ display:block; font-weight:900; margin:14px 0 8px; }
-  input[type="text"], textarea, select{ width:100%; max-width:100%; box-sizing:border-box; padding:12px 12px;
-    border-radius:12px; border:0; outline:none; font-size:16px; }
+
+  .meta{
+    margin:10px 0 18px;
+    font-weight:900;
+    font-size:18px;
+  }
+
+  .section-title{
+    font-size:18px;
+    font-weight:900;
+    margin:18px 0 10px;
+    border-bottom:2px solid #fff;
+    padding-bottom:6px;
+    text-align:left;
+  }
+
+  .panel{
+    display:block;
+    background: var(--gray);
+    padding: 22px;
+    border-radius: 18px;
+    text-align:left;
+  }
+
+  label{
+    display:block;
+    font-weight:900;
+    margin:14px 0 8px;
+  }
+
+  input[type="text"], textarea, select{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    padding:12px 12px;
+    border-radius:12px;
+    border:0;
+    outline:none;
+    font-size:16px;
+  }
+
   textarea{ min-height:140px; resize:vertical; }
-  .row{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
   @media (max-width:720px){ .row{ grid-template-columns:1fr; } }
-  .btn{ display:inline-block; margin:18px 10px 0 0; padding:14px 26px; font-size:18px; font-weight:800;
-    border-radius:999px; text-decoration:none; color:var(--btn-txt); background:var(--btn-bg);
-    border:2px solid var(--accent); cursor:pointer; }
+
+  .btn{
+    display:inline-block;
+    margin:18px 10px 0 0;
+    padding:14px 26px;
+    font-size:18px;
+    font-weight:800;
+    border-radius:999px;
+    text-decoration:none;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+  }
+
   .btn:disabled{ opacity:0.6; cursor:not-allowed; }
-  .status{ margin-top:14px; font-weight:900; }
+
+  .status{
+    margin-top:14px;
+    font-weight:900;
+  }
   .status.ok{ color: var(--ok); }
   .status.bad{ color: var(--bad); }
-  .hint{ margin-top:10px; opacity:0.9; font-size:14px; line-height:1.35; }
-  footer{ margin-top:18px; font-size:0.9em; opacity:0.85; text-align:center; }
+
+  .hint{
+    margin-top:10px;
+    opacity:0.9;
+    font-size:14px;
+    line-height:1.35;
+  }
+
+  footer{
+    margin-top:18px;
+    font-size:0.9em;
+    opacity:0.85;
+    text-align:center;
+  }
+
+  table th, table td{
+    vertical-align:top;
+  }
 </style>
 </head>
 
 <body>
 <div class="container">
   <a class="back" id="backLink" href="equipment.html">← Back</a>
+
   <h1 id="pageTitle">Submit</h1>
   <div class="meta" id="metaLine"></div>
 
@@ -78,12 +176,38 @@
     <button class="btn" id="saveBtn" type="button">Save to Firebase</button>
     <button class="btn" id="clearBtn" type="button">Clear</button>
 
+    <!-- ✅ Option 3: persistent saved banner -->
+    <div class="status ok" id="savedBanner" style="display:none;"></div>
+
+    <!-- Existing status message (errors, “Saving…”, etc.) -->
     <div class="status" id="statusMsg"></div>
 
     <div class="hint">
       URL format expected:<br>
       <code>submit.html?form=rif&amp;eq=TR-001</code><br>
-      This page writes to Firestore collection <code>submissions</code> with fields: eq, formId, status, notes, techName, createdAt, pageUrl.
+      Writes to Firestore collection <code>submissions</code> with fields: eq, formId, status, notes, techName, createdAt, pageUrl.
+    </div>
+  </div>
+
+  <!-- ✅ History UI -->
+  <div class="section-title">Submission History</div>
+  <div class="panel" id="historyPanel">
+    <div class="hint" id="historyHint">Loading…</div>
+
+    <div style="overflow:auto;">
+      <table id="historyTable" style="width:100%; border-collapse:collapse; display:none;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Time</th>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Equipment</th>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Task</th>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Status</th>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Tech</th>
+            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Notes</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -100,18 +224,32 @@
   const initialFormId = (qs.get("form") || qs.get("id") || "").trim();
   const initialEq = (qs.get("eq") || "").trim();
 
+  // Elements
   const backLink = document.getElementById("backLink");
   const pageTitle = document.getElementById("pageTitle");
   const metaLine = document.getElementById("metaLine");
   const taskEl = document.getElementById("taskId");
   const eqEl = document.getElementById("equipmentId");
 
+  const saveBtn = document.getElementById("saveBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const statusMsg = document.getElementById("statusMsg");
+  const savedBanner = document.getElementById("savedBanner");
+
+  // History elements
+  const historyHint = document.getElementById("historyHint");
+  const historyTable = document.getElementById("historyTable");
+  const historyBody = document.getElementById("historyBody");
+
+  // Populate fields
   taskEl.value = initialFormId || "";
   eqEl.value = initialEq || "";
 
+  // Page labels
   pageTitle.textContent = initialFormId ? `Submit: ${initialFormId.toUpperCase()}` : "Submit";
   metaLine.textContent = initialEq ? `Equipment: ${initialEq}` : "";
 
+  // Back link reflects current equipment value
   function updateBackLink(){
     const eqVal = eqEl.value.trim();
     backLink.href = `equipment.html${eqVal ? `?eq=${encodeURIComponent(eqVal)}` : ""}`;
@@ -132,21 +270,27 @@
   };
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-  import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import {
+    getFirestore, addDoc, collection, serverTimestamp,
+    getDocs, query, where, orderBy, limit
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   // =========================
-  // 3) Save submission
+  // Helpers
   // =========================
-  const saveBtn = document.getElementById("saveBtn");
-  const clearBtn = document.getElementById("clearBtn");
-  const statusMsg = document.getElementById("statusMsg");
-
   function setStatus(text, type){
     statusMsg.textContent = text || "";
     statusMsg.className = "status" + (type ? ` ${type}` : "");
+  }
+
+  function resetSavedUI(){
+    savedBanner.style.display = "none";
+    savedBanner.textContent = "";
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save to Firebase";
   }
 
   function validate(){
@@ -157,6 +301,95 @@
     return "";
   }
 
+  function fmtTime(ts){
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString();
+  }
+
+  function escapeHtml(s){
+    return (s ?? "").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  // =========================
+  // 3) History loader
+  // =========================
+  async function loadHistory(){
+    const eqVal = eqEl.value.trim();
+    // const formVal = taskEl.value.trim(); // optional if you want to filter by task too
+
+    if (!eqVal){
+      historyHint.textContent = "Enter an Equipment ID to see history.";
+      historyTable.style.display = "none";
+      historyBody.innerHTML = "";
+      return;
+    }
+
+    historyHint.textContent = "Loading…";
+    historyTable.style.display = "none";
+    historyBody.innerHTML = "";
+
+    try{
+      const q = query(
+        collection(db, "submissions"),
+        where("eq", "==", eqVal),
+        // where("formId", "==", formVal), // OPTIONAL: filter by task too
+        orderBy("createdAt", "desc"),
+        limit(25)
+      );
+
+      const snap = await getDocs(q);
+
+      if (snap.empty){
+        historyHint.textContent = "No submissions found yet for this equipment.";
+        return;
+      }
+
+      const rows = [];
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        rows.push(`
+          <tr>
+            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
+              ${escapeHtml(fmtTime(d.createdAt))}
+            </td>
+            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
+              ${escapeHtml(d.eq)}
+            </td>
+            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
+              ${escapeHtml(d.formId)}
+            </td>
+            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
+              ${escapeHtml(d.status)}
+            </td>
+            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
+              ${escapeHtml(d.techName)}
+            </td>
+            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15);">
+              ${escapeHtml(d.notes)}
+            </td>
+          </tr>
+        `);
+      });
+
+      historyBody.innerHTML = rows.join("");
+      historyHint.textContent = "";
+      historyTable.style.display = "table";
+    } catch(e){
+      console.error(e);
+      historyHint.textContent = `History load error: ${e.code || ""} ${e.message || e}`;
+      historyTable.style.display = "none";
+    }
+  }
+
+  // =========================
+  // 4) Save submission (Option 3 + 4)
+  // =========================
   async function save(){
     const err = validate();
     if (err){ setStatus(err, "bad"); return; }
@@ -177,11 +410,22 @@
 
     try{
       await addDoc(collection(db, "submissions"), payload);
-      setStatus("Saved to Firebase.", "ok");
+
+      // ✅ Option 3: persistent banner
+      savedBanner.style.display = "block";
+      savedBanner.textContent = `✔ Saved at ${new Date().toLocaleTimeString()}`;
+
+      // ✅ Option 4: lock button after success
+      saveBtn.textContent = "Saved ✔";
+      saveBtn.disabled = true;
+
+      setStatus("", "");
+
+      // Refresh history after save
+      loadHistory();
     } catch(e){
       console.error(e);
       setStatus(`Error saving: ${e.code || ""} ${e.message || e}`, "bad");
-    } finally{
       saveBtn.disabled = false;
     }
   }
@@ -190,12 +434,28 @@
     document.getElementById("statusSelect").value = "complete";
     document.getElementById("notes").value = "";
     document.getElementById("techName").value = "";
+    resetSavedUI();
     setStatus("", "");
   }
+
+  // Re-enable save when user edits anything
+  ["input","change"].forEach(evt => {
+    eqEl.addEventListener(evt, resetSavedUI);
+    document.getElementById("statusSelect").addEventListener(evt, resetSavedUI);
+    document.getElementById("notes").addEventListener(evt, resetSavedUI);
+    document.getElementById("techName").addEventListener(evt, resetSavedUI);
+  });
+
+  // Refresh history when equipment changes
+  eqEl.addEventListener("change", loadHistory);
 
   saveBtn.addEventListener("click", save);
   clearBtn.addEventListener("click", clear);
 
+  // Load history on page load
+  loadHistory();
+
+  // Optional: show initial validation error (kept, but doesn’t affect banner)
   const initialErr = validate();
   if (initialErr) setStatus(initialErr, "bad");
 </script>
