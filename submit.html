@@ -15,120 +15,31 @@
     --bad:#ff5252;
     --gray:rgba(80,80,80,0.65);
   }
-  body{
-    margin:0;
-    padding:0;
-    font-family:Arial, sans-serif;
-    color:#fff;
-    background:var(--bg);
-    background-repeat:no-repeat;
-    background-position:center center;
-    background-size:cover;
-    background-attachment:fixed;
-  }
-  .container{
-    max-width:900px;
-    margin:40px auto;
-    background:var(--panel);
-    padding:30px;
-    border-radius:18px;
-    backdrop-filter:blur(6px);
-    text-align:center;
-  }
-  .back{
-    color:#fff;
-    text-decoration:none;
-    font-weight:bold;
-    display:inline-block;
-    margin-bottom:20px;
-  }
-  h1{
-    font-size:32px;
-    font-weight:700;
-    margin:0;
-  }
-  .meta{
-    margin:10px 0 18px;
-    font-weight:900;
-    font-size:18px;
-  }
-  .section-title{
-    font-size:18px;
-    font-weight:900;
-    margin:18px 0 10px;
-    border-bottom:2px solid #fff;
-    padding-bottom:6px;
-    text-align:left;
-  }
-  .panel{
-    display:block;
-    background: var(--gray);
-    padding: 22px;
-    border-radius: 18px;
-    text-align:left;
-  }
-  label{
-    display:block;
-    font-weight:900;
-    margin:14px 0 8px;
-  }
-  input[type="text"], textarea, select{
-    width:100%;
-    max-width:100%;
-    box-sizing:border-box;
-    padding:12px 12px;
-    border-radius:12px;
-    border:0;
-    outline:none;
-    font-size:16px;
-  }
-  textarea{
-    min-height:140px;
-    resize:vertical;
-  }
-  .row{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:14px;
-  }
-  @media (max-width:720px){
-    .row{ grid-template-columns:1fr; }
-  }
-  .btn{
-    display:inline-block;
-    margin:18px 10px 0 0;
-    padding:14px 26px;
-    font-size:18px;
-    font-weight:800;
-    border-radius:999px;
-    text-decoration:none;
-    color:var(--btn-txt);
-    background:var(--btn-bg);
-    border:2px solid var(--accent);
-    cursor:pointer;
-  }
-  .btn:disabled{
-    opacity:0.6;
-    cursor:not-allowed;
-  }
-  .status{
-    margin-top:14px;
-    font-weight:900;
-  }
+  body{ margin:0; padding:0; font-family:Arial, sans-serif; color:#fff; background:var(--bg);
+    background-repeat:no-repeat; background-position:center center; background-size:cover; background-attachment:fixed; }
+  .container{ max-width:900px; margin:40px auto; background:var(--panel); padding:30px; border-radius:18px;
+    backdrop-filter:blur(6px); text-align:center; }
+  .back{ color:#fff; text-decoration:none; font-weight:bold; display:inline-block; margin-bottom:20px; }
+  h1{ font-size:32px; font-weight:700; margin:0; }
+  .meta{ margin:10px 0 18px; font-weight:900; font-size:18px; }
+  .section-title{ font-size:18px; font-weight:900; margin:18px 0 10px; border-bottom:2px solid #fff;
+    padding-bottom:6px; text-align:left; }
+  .panel{ display:block; background: var(--gray); padding: 22px; border-radius: 18px; text-align:left; }
+  label{ display:block; font-weight:900; margin:14px 0 8px; }
+  input[type="text"], textarea, select{ width:100%; max-width:100%; box-sizing:border-box; padding:12px 12px;
+    border-radius:12px; border:0; outline:none; font-size:16px; }
+  textarea{ min-height:140px; resize:vertical; }
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  @media (max-width:720px){ .row{ grid-template-columns:1fr; } }
+  .btn{ display:inline-block; margin:18px 10px 0 0; padding:14px 26px; font-size:18px; font-weight:800;
+    border-radius:999px; text-decoration:none; color:var(--btn-txt); background:var(--btn-bg);
+    border:2px solid var(--accent); cursor:pointer; }
+  .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+  .status{ margin-top:14px; font-weight:900; }
   .status.ok{ color: var(--ok); }
   .status.bad{ color: var(--bad); }
-  .hint{
-    margin-top:10px;
-    opacity:0.9;
-    font-size:14px;
-    line-height:1.35;
-  }
-  footer{
-    margin-top:18px;
-    font-size:0.9em;
-    opacity:0.85;
-    text-align:center;
-  }
+  .hint{ margin-top:10px; opacity:0.9; font-size:14px; line-height:1.35; }
+  footer{ margin-top:18px; font-size:0.9em; opacity:0.85; text-align:center; }
 </style>
 </head>
 
@@ -164,7 +75,7 @@
     <label for="techName">Technician Name (optional)</label>
     <input id="techName" type="text" placeholder="Name">
 
-    <button class="btn" id="saveBtn" type="button" disabled>Save to Firebase</button>
+    <button class="btn" id="saveBtn" type="button">Save to Firebase</button>
     <button class="btn" id="clearBtn" type="button">Clear</button>
 
     <div class="status" id="statusMsg"></div>
@@ -189,22 +100,18 @@
   const initialFormId = (qs.get("form") || qs.get("id") || "").trim();
   const initialEq = (qs.get("eq") || "").trim();
 
-  // Elements
   const backLink = document.getElementById("backLink");
   const pageTitle = document.getElementById("pageTitle");
   const metaLine = document.getElementById("metaLine");
   const taskEl = document.getElementById("taskId");
   const eqEl = document.getElementById("equipmentId");
 
-  // Populate fields
   taskEl.value = initialFormId || "";
   eqEl.value = initialEq || "";
 
-  // Page labels
   pageTitle.textContent = initialFormId ? `Submit: ${initialFormId.toUpperCase()}` : "Submit";
   metaLine.textContent = initialEq ? `Equipment: ${initialEq}` : "";
 
-  // Back link updates based on current equipment input
   function updateBackLink(){
     const eqVal = eqEl.value.trim();
     backLink.href = `equipment.html${eqVal ? `?eq=${encodeURIComponent(eqVal)}` : ""}`;
@@ -227,7 +134,12 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
+  // =========================
+  // 3) Save submission
+  // =========================
   const saveBtn = document.getElementById("saveBtn");
   const clearBtn = document.getElementById("clearBtn");
   const statusMsg = document.getElementById("statusMsg");
@@ -237,25 +149,6 @@
     statusMsg.className = "status" + (type ? ` ${type}` : "");
   }
 
-  // Disable save until auth is ready
-  saveBtn.disabled = true;
-  setStatus("Signing in…", "");
-
-  signInAnonymously(auth).catch((e) => {
-    console.error(e);
-    setStatus(`Auth error: ${e.code || ""} ${e.message || e}`, "bad");
-  });
-
-  onAuthStateChanged(auth, (user) => {
-    if (user){
-      saveBtn.disabled = false;
-      setStatus("", "");
-    }
-  });
-
-  // =========================
-  // 3) Save submission
-  // =========================
   function validate(){
     const formVal = taskEl.value.trim();
     const eqVal = eqEl.value.trim();
@@ -266,10 +159,7 @@
 
   async function save(){
     const err = validate();
-    if (err){
-      setStatus(err, "bad");
-      return;
-    }
+    if (err){ setStatus(err, "bad"); return; }
 
     const payload = {
       eq: eqEl.value.trim(),
@@ -306,10 +196,8 @@
   saveBtn.addEventListener("click", save);
   clearBtn.addEventListener("click", clear);
 
-  // Auto-warn if missing params/inputs
   const initialErr = validate();
   if (initialErr) setStatus(initialErr, "bad");
 </script>
 </body>
 </html>
-
