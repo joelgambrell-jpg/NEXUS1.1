@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>NEXUS Submit</title>
-
 <style>
   :root{
     --bg:#b60000;
@@ -16,7 +15,6 @@
     --bad:#ff5252;
     --gray:rgba(80,80,80,0.65);
   }
-
   body{
     margin:0;
     padding:0;
@@ -28,7 +26,6 @@
     background-size:cover;
     background-attachment:fixed;
   }
-
   .container{
     max-width:900px;
     margin:40px auto;
@@ -38,7 +35,6 @@
     backdrop-filter:blur(6px);
     text-align:center;
   }
-
   .back{
     color:#fff;
     text-decoration:none;
@@ -46,19 +42,16 @@
     display:inline-block;
     margin-bottom:20px;
   }
-
   h1{
     font-size:32px;
     font-weight:700;
     margin:0;
   }
-
   .meta{
     margin:10px 0 18px;
     font-weight:900;
     font-size:18px;
   }
-
   .section-title{
     font-size:18px;
     font-weight:900;
@@ -67,7 +60,6 @@
     padding-bottom:6px;
     text-align:left;
   }
-
   .panel{
     display:block;
     background: var(--gray);
@@ -75,13 +67,11 @@
     border-radius: 18px;
     text-align:left;
   }
-
   label{
     display:block;
     font-weight:900;
     margin:14px 0 8px;
   }
-
   input[type="text"], textarea, select{
     width:100%;
     max-width:100%;
@@ -92,12 +82,10 @@
     outline:none;
     font-size:16px;
   }
-
   textarea{
     min-height:140px;
     resize:vertical;
   }
-
   .row{
     display:grid;
     grid-template-columns: 1fr 1fr;
@@ -106,7 +94,6 @@
   @media (max-width:720px){
     .row{ grid-template-columns:1fr; }
   }
-
   .btn{
     display:inline-block;
     margin:18px 10px 0 0;
@@ -120,26 +107,22 @@
     border:2px solid var(--accent);
     cursor:pointer;
   }
-
   .btn:disabled{
     opacity:0.6;
     cursor:not-allowed;
   }
-
   .status{
     margin-top:14px;
     font-weight:900;
   }
   .status.ok{ color: var(--ok); }
   .status.bad{ color: var(--bad); }
-
   .hint{
     margin-top:10px;
     opacity:0.9;
     font-size:14px;
     line-height:1.35;
   }
-
   footer{
     margin-top:18px;
     font-size:0.9em;
@@ -152,7 +135,6 @@
 <body>
 <div class="container">
   <a class="back" id="backLink" href="equipment.html">← Back</a>
-
   <h1 id="pageTitle">Submit</h1>
   <div class="meta" id="metaLine"></div>
 
@@ -182,7 +164,7 @@
     <label for="techName">Technician Name (optional)</label>
     <input id="techName" type="text" placeholder="Name">
 
-    <button class="btn" id="saveBtn" type="button">Save to Firebase</button>
+    <button class="btn" id="saveBtn" type="button" disabled>Save to Firebase</button>
     <button class="btn" id="clearBtn" type="button">Clear</button>
 
     <div class="status" id="statusMsg"></div>
@@ -204,7 +186,7 @@
   // 1) Read URL params
   // =========================
   const qs = new URLSearchParams(location.search);
-  const initialFormId = (qs.get("form") || qs.get("id") || "").trim(); // supports ?form= and ?id=
+  const initialFormId = (qs.get("form") || qs.get("id") || "").trim();
   const initialEq = (qs.get("eq") || "").trim();
 
   // Elements
@@ -222,7 +204,7 @@
   pageTitle.textContent = initialFormId ? `Submit: ${initialFormId.toUpperCase()}` : "Submit";
   metaLine.textContent = initialEq ? `Equipment: ${initialEq}` : "";
 
-  // Back link (updates based on current equipment input)
+  // Back link updates based on current equipment input
   function updateBackLink(){
     const eqVal = eqEl.value.trim();
     backLink.href = `equipment.html${eqVal ? `?eq=${encodeURIComponent(eqVal)}` : ""}`;
@@ -245,12 +227,16 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+  // ✅ ADD: Auth imports
+  import { getAuth, signInAnonymously, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // =========================
-  // 3) Save submission
-  // =========================
+  // ✅ ADD: Anonymous sign-in (required for your signedIn() rules)
+  const auth = getAuth(app);
+
   const saveBtn = document.getElementById("saveBtn");
   const clearBtn = document.getElementById("clearBtn");
   const statusMsg = document.getElementById("statusMsg");
@@ -260,6 +246,25 @@
     statusMsg.className = "status" + (type ? ` ${type}` : "");
   }
 
+  // Disable save until auth is ready
+  saveBtn.disabled = true;
+  setStatus("Signing in…", "");
+
+  signInAnonymously(auth).catch((e) => {
+    console.error(e);
+    setStatus(`Auth error: ${e.code || ""} ${e.message || e}`, "bad");
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user){
+      saveBtn.disabled = false;
+      setStatus("", "");
+    }
+  });
+
+  // =========================
+  // 3) Save submission
+  // =========================
   function validate(){
     const formVal = taskEl.value.trim();
     const eqVal = eqEl.value.trim();
