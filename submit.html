@@ -5,18 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>NEXUS Submit</title>
 
+<!-- PDF export (manual download) -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+
 <style>
   :root{
     --bg:#b60000;
-    --panel:rgba(255,255,255,0.20);
+    --panel:rgba(255,255,255,0.18);
+    --panel2:rgba(0,0,0,0.25);
     --accent:#00c2ff;
     --btn-bg:#0a0f24;
     --btn-txt:#3ecbff;
     --ok:#39ff14;
     --bad:#ff5252;
-    --gray:rgba(80,80,80,0.65);
+    --warn:#ffd54a;
+    --line:rgba(255,255,255,0.20);
   }
-
+  *{ box-sizing:border-box; }
   body{
     margin:0; padding:0;
     font-family:Arial, sans-serif;
@@ -27,188 +32,291 @@
     background-size:cover;
     background-attachment:fixed;
   }
-
   .container{
-    max-width:900px;
-    margin:40px auto;
+    max-width:980px;
+    margin:28px auto 84px;
     background:var(--panel);
-    padding:30px;
+    padding:24px;
     border-radius:18px;
-    backdrop-filter:blur(6px);
-    text-align:center;
+    backdrop-filter:blur(8px);
   }
-
+  header.top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
   .back{
     color:#fff;
     text-decoration:none;
-    font-weight:bold;
-    display:inline-block;
-    margin-bottom:20px;
+    font-weight:800;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
   }
+  h1{ font-size:28px; font-weight:900; margin:0; letter-spacing:0.2px; }
+  .meta{ margin:6px 0 0; font-weight:900; font-size:14px; opacity:0.95; }
 
-  h1{ font-size:32px; font-weight:700; margin:0; }
-
-  .meta{
-    margin:10px 0 18px;
-    font-weight:900;
-    font-size:18px;
+  .grid{ display:grid; grid-template-columns: 1fr; gap:16px; }
+  .card{
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:18px;
   }
-
   .section-title{
-    font-size:18px;
+    font-size:14px;
     font-weight:900;
-    margin:18px 0 10px;
-    border-bottom:2px solid #fff;
-    padding-bottom:6px;
-    text-align:left;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    opacity:0.95;
+    margin:0 0 12px;
   }
 
-  .panel{
-    display:block;
-    background: var(--gray);
-    padding: 22px;
-    border-radius: 18px;
-    text-align:left;
-  }
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  @media (max-width:720px){ .row{ grid-template-columns:1fr; } }
 
-  label{
-    display:block;
-    font-weight:900;
-    margin:14px 0 8px;
-  }
+  label{ display:block; font-weight:900; margin:12px 0 8px; font-size:13px; opacity:0.95; }
 
   input[type="text"], textarea, select{
     width:100%;
-    max-width:100%;
-    box-sizing:border-box;
     padding:12px 12px;
     border-radius:12px;
-    border:0;
+    border:1px solid rgba(255,255,255,0.18);
     outline:none;
-    font-size:16px;
+    font-size:15px;
+    background:rgba(255,255,255,0.92);
+    color:#111;
   }
+  textarea{ min-height:120px; resize:vertical; }
 
-  textarea{ min-height:140px; resize:vertical; }
-
-  .row{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:14px;
-  }
-  @media (max-width:720px){ .row{ grid-template-columns:1fr; } }
-
+  .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
   .btn{
-    display:inline-block;
-    margin:18px 10px 0 0;
-    padding:14px 26px;
-    font-size:18px;
-    font-weight:800;
+    padding:12px 16px;
+    font-size:15px;
+    font-weight:900;
     border-radius:999px;
-    text-decoration:none;
     color:var(--btn-txt);
     background:var(--btn-bg);
     border:2px solid var(--accent);
     cursor:pointer;
+    user-select:none;
   }
-
+  .btn.secondary{
+    background:rgba(0,0,0,0.20);
+    color:#fff;
+    border:2px solid rgba(255,255,255,0.35);
+  }
   .btn:disabled{ opacity:0.6; cursor:not-allowed; }
 
-  .status{
-    margin-top:14px;
+  .statusline{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
     font-weight:900;
+    font-size:13px;
+    border:1px solid rgba(255,255,255,0.25);
+    background:rgba(0,0,0,0.18);
   }
-  .status.ok{ color: var(--ok); }
-  .status.bad{ color: var(--bad); }
+  .chip.ok{ color:var(--ok); }
+  .chip.bad{ color:var(--bad); }
+  .chip.warn{ color:var(--warn); }
+  .chip.muted{ opacity:0.9; }
 
-  .hint{
-    margin-top:10px;
-    opacity:0.9;
+  .hint{ margin-top:10px; opacity:0.9; font-size:13px; line-height:1.35; }
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:end;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .toolbar .left, .toolbar .right{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:end;
+  }
+  .small{ font-size:12px; opacity:0.9; font-weight:800; }
+
+  .toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.22);
+    background:rgba(0,0,0,0.18);
+    font-weight:900;
+    font-size:13px;
+    user-select:none;
+  }
+  .toggle input{ width:18px; height:18px; }
+
+  table{ width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; }
+  thead th{
+    text-align:left;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:10px;
+    border-bottom:1px solid var(--line);
+    opacity:0.95;
+  }
+  tbody td{
+    padding:10px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
     font-size:14px;
-    line-height:1.35;
-  }
-
-  footer{
-    margin-top:18px;
-    font-size:0.9em;
-    opacity:0.85;
-    text-align:center;
-  }
-
-  table th, table td{
     vertical-align:top;
   }
+  tbody tr:hover{ background:rgba(255,255,255,0.06); }
+
+  .nowrap{ white-space:nowrap; }
+  .notesCell{ max-width:460px; }
+  .stickyBar{
+    position:fixed; left:0; right:0; bottom:0;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(10px);
+    border-top:1px solid rgba(255,255,255,0.18);
+    padding:10px 12px;
+  }
+  .stickyInner{
+    max-width:980px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  footer{ margin-top:14px; font-size:0.9em; opacity:0.85; text-align:center; }
 </style>
 </head>
 
 <body>
 <div class="container">
-  <a class="back" id="backLink" href="equipment.html">← Back</a>
+  <header class="top">
+    <a class="back" id="backLink" href="equipment.html">← Back</a>
+    <div style="text-align:right;">
+      <h1 id="pageTitle">Submit</h1>
+      <div class="meta" id="metaLine"></div>
+    </div>
+  </header>
 
-  <h1 id="pageTitle">Submit</h1>
-  <div class="meta" id="metaLine"></div>
+  <div class="grid">
 
-  <div class="section-title">Submission</div>
-  <div class="panel">
-    <div class="row">
-      <div>
-        <label for="taskId">Task</label>
-        <input id="taskId" type="text" readonly>
+    <!-- Submission -->
+    <section class="card">
+      <div class="section-title">Submission</div>
+
+      <div class="row">
+        <div>
+          <label for="taskId">Task</label>
+          <input id="taskId" type="text" readonly>
+        </div>
+        <div>
+          <label for="equipmentId">Equipment</label>
+          <input id="equipmentId" type="text" placeholder="TR-001">
+        </div>
       </div>
-      <div>
-        <label for="equipmentId">Equipment</label>
-        <input id="equipmentId" type="text" />
+
+      <div class="row">
+        <div>
+          <label for="statusSelect">Status</label>
+          <select id="statusSelect">
+            <option value="complete">Complete</option>
+            <option value="in_progress">In Progress</option>
+            <option value="issue">Issue / Needs Attention</option>
+          </select>
+        </div>
+        <div>
+          <label for="techName">Technician Name</label>
+          <input id="techName" type="text" placeholder="Name (optional)">
+        </div>
       </div>
-    </div>
 
-    <label for="statusSelect">Status</label>
-    <select id="statusSelect">
-      <option value="complete">Complete</option>
-      <option value="in_progress">In Progress</option>
-      <option value="issue">Issue / Needs Attention</option>
-    </select>
+      <label for="notes">Notes</label>
+      <textarea id="notes" placeholder="Enter notes (measurements, issues found, actions taken, etc.)"></textarea>
 
-    <label for="notes">Notes</label>
-    <textarea id="notes" placeholder="Enter notes (measurements, issues found, actions taken, etc.)"></textarea>
+      <div class="actions">
+        <button class="btn" id="saveBtn" type="button">Save</button>
+        <button class="btn secondary" id="clearBtn" type="button">Clear</button>
+        <button class="btn" id="exportPdfBtn" type="button">Export PDF (All)</button>
+        <button class="btn secondary" id="refreshBtn" type="button">Refresh History</button>
+      </div>
 
-    <label for="techName">Technician Name (optional)</label>
-    <input id="techName" type="text" placeholder="Name">
+      <div class="statusline">
+        <div class="chip ok" id="savedBanner" style="display:none;">✔ Saved</div>
+        <div class="chip muted" id="statusMsg" style="display:none;"></div>
+      </div>
 
-    <button class="btn" id="saveBtn" type="button">Save to Firebase</button>
-    <button class="btn" id="clearBtn" type="button">Clear</button>
+      <div class="hint">
+        URL format expected:<br>
+        <code>submit.html?form=rif&amp;eq=TR-001</code><br>
+        Writes to Firestore collection <code>submissions</code>.
+      </div>
+    </section>
 
-    <!-- ✅ Option 3: persistent saved banner -->
-    <div class="status ok" id="savedBanner" style="display:none;"></div>
+    <!-- History -->
+    <section class="card" id="historyPanel">
+      <div class="section-title">Submission History</div>
 
-    <!-- Existing status message (errors, “Saving…”, etc.) -->
-    <div class="status" id="statusMsg"></div>
+      <div class="toolbar">
+        <div class="left">
+          <div>
+            <div class="small">Search (notes/tech/status/task)</div>
+            <input id="searchInput" type="text" placeholder="Search history…" />
+          </div>
 
-    <div class="hint">
-      URL format expected:<br>
-      <code>submit.html?form=rif&amp;eq=TR-001</code><br>
-      Writes to Firestore collection <code>submissions</code> with fields: eq, formId, status, notes, techName, createdAt, pageUrl.
-    </div>
-  </div>
+          <div>
+            <div class="small">Show</div>
+            <select id="limitSelect">
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
 
-  <!-- ✅ History UI -->
-  <div class="section-title">Submission History</div>
-  <div class="panel" id="historyPanel">
-    <div class="hint" id="historyHint">Loading…</div>
+          <label class="toggle" title="If enabled, history ignores Equipment and shows latest submissions across all equipment.">
+            <input type="checkbox" id="showAllToggle">
+            Show All Equipment
+          </label>
+        </div>
 
-    <div style="overflow:auto;">
-      <table id="historyTable" style="width:100%; border-collapse:collapse; display:none;">
-        <thead>
-          <tr>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Time</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Equipment</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Task</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Status</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Tech</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.35);">Notes</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-    </div>
+        <div class="right">
+          <div class="chip warn" id="historyHint">Loading…</div>
+          <div class="chip muted" id="countChip" style="display:none;">0 rows</div>
+        </div>
+      </div>
+
+      <div style="overflow:auto;">
+        <table id="historyTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Equipment</th>
+              <th>Task</th>
+              <th>Status</th>
+              <th>Tech</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
   <footer>
@@ -216,49 +324,94 @@
   </footer>
 </div>
 
+<!-- Sticky mini-status -->
+<div class="stickyBar">
+  <div class="stickyInner">
+    <div class="chip muted" id="stickyEq">Equipment: —</div>
+    <div class="chip muted" id="stickyLast">Last action: —</div>
+  </div>
+</div>
+
 <script type="module">
   // =========================
-  // 1) Read URL params
+  // Local settings (persist UI)
+  // =========================
+  const LS_KEY = "nexus_submit_settings_v1";
+  function loadSettings(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }catch{ return {}; }
+  }
+  function saveSettings(patch){
+    const cur = loadSettings();
+    const next = { ...cur, ...patch };
+    localStorage.setItem(LS_KEY, JSON.stringify(next));
+    return next;
+  }
+
+  // =========================
+  // URL params
   // =========================
   const qs = new URLSearchParams(location.search);
   const initialFormId = (qs.get("form") || qs.get("id") || "").trim();
   const initialEq = (qs.get("eq") || "").trim();
 
-  // Elements
+  // =========================
+  // DOM
+  // =========================
   const backLink = document.getElementById("backLink");
   const pageTitle = document.getElementById("pageTitle");
-  const metaLine = document.getElementById("metaLine");
-  const taskEl = document.getElementById("taskId");
-  const eqEl = document.getElementById("equipmentId");
+  const metaLine  = document.getElementById("metaLine");
+  const taskEl    = document.getElementById("taskId");
+  const eqEl      = document.getElementById("equipmentId");
 
-  const saveBtn = document.getElementById("saveBtn");
-  const clearBtn = document.getElementById("clearBtn");
-  const statusMsg = document.getElementById("statusMsg");
+  const saveBtn   = document.getElementById("saveBtn");
+  const clearBtn  = document.getElementById("clearBtn");
+  const refreshBtn= document.getElementById("refreshBtn");
+  const exportPdfBtn = document.getElementById("exportPdfBtn");
+
+  const statusMsg   = document.getElementById("statusMsg");
   const savedBanner = document.getElementById("savedBanner");
 
-  // History elements
   const historyHint = document.getElementById("historyHint");
-  const historyTable = document.getElementById("historyTable");
+  const historyTable= document.getElementById("historyTable");
   const historyBody = document.getElementById("historyBody");
 
-  // Populate fields
+  const searchInput = document.getElementById("searchInput");
+  const limitSelect = document.getElementById("limitSelect");
+  const countChip   = document.getElementById("countChip");
+  const showAllToggle = document.getElementById("showAllToggle");
+
+  const stickyEq   = document.getElementById("stickyEq");
+  const stickyLast = document.getElementById("stickyLast");
+
+  // =========================
+  // Apply initial values + persisted settings
+  // =========================
+  const settings = loadSettings();
   taskEl.value = initialFormId || "";
   eqEl.value = initialEq || "";
 
-  // Page labels
-  pageTitle.textContent = initialFormId ? `Submit: ${initialFormId.toUpperCase()}` : "Submit";
-  metaLine.textContent = initialEq ? `Equipment: ${initialEq}` : "";
+  limitSelect.value = String(settings.limit || "25");
+  searchInput.value = String(settings.search || "");
+  showAllToggle.checked = !!settings.showAll;
 
-  // Back link reflects current equipment value
+  function updateHeader(){
+    const formVal = taskEl.value.trim();
+    const eqVal = eqEl.value.trim();
+    pageTitle.textContent = formVal ? `Submit: ${formVal.toUpperCase()}` : "Submit";
+    metaLine.textContent  = eqVal ? `Equipment: ${eqVal}` : "";
+  }
+
   function updateBackLink(){
     const eqVal = eqEl.value.trim();
     backLink.href = `equipment.html${eqVal ? `?eq=${encodeURIComponent(eqVal)}` : ""}`;
+    stickyEq.textContent = `Equipment: ${eqVal || "—"}`;
   }
+
+  updateHeader();
   updateBackLink();
-  eqEl.addEventListener("input", updateBackLink);
 
   // =========================
-  // 2) Firebase setup
+  // Firebase setup
   // =========================
   const firebaseConfig = {
     apiKey: "AIzaSyClHD9dkDCMIznznNq8xw8SCtk21DP0TCo",
@@ -272,7 +425,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import {
     getFirestore, addDoc, collection, serverTimestamp,
-    getDocs, query, where, orderBy, limit
+    getDocs, query, where, orderBy, limit, startAfter
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const app = initializeApp(firebaseConfig);
@@ -281,32 +434,6 @@
   // =========================
   // Helpers
   // =========================
-  function setStatus(text, type){
-    statusMsg.textContent = text || "";
-    statusMsg.className = "status" + (type ? ` ${type}` : "");
-  }
-
-  function resetSavedUI(){
-    savedBanner.style.display = "none";
-    savedBanner.textContent = "";
-    saveBtn.disabled = false;
-    saveBtn.textContent = "Save to Firebase";
-  }
-
-  function validate(){
-    const formVal = taskEl.value.trim();
-    const eqVal = eqEl.value.trim();
-    if (!formVal) return "Missing form/task id. Use ?form=rif or ?id=rif";
-    if (!eqVal) return "Missing equipment id. Use ?eq=TR-001 (or type it above)";
-    return "";
-  }
-
-  function fmtTime(ts){
-    if (!ts) return "";
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleString();
-  }
-
   function escapeHtml(s){
     return (s ?? "").toString()
       .replaceAll("&","&amp;")
@@ -315,84 +442,171 @@
       .replaceAll('"',"&quot;")
       .replaceAll("'","&#39;");
   }
+  function fmtTime(ts){
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString();
+  }
+  function statusLabel(v){
+    if (v === "complete") return "Complete";
+    if (v === "in_progress") return "In Progress";
+    if (v === "issue") return "Issue";
+    return v || "";
+  }
 
-  // =========================
-  // 3) History loader
-  // =========================
-  async function loadHistory(){
+  function setStatus(text, type){
+    if (!text){
+      statusMsg.style.display = "none";
+      statusMsg.textContent = "";
+      statusMsg.className = "chip muted";
+      return;
+    }
+    statusMsg.style.display = "inline-flex";
+    statusMsg.textContent = text;
+    statusMsg.className = "chip " + (type || "muted");
+  }
+
+  function setLastAction(text){
+    stickyLast.textContent = `Last action: ${text}`;
+  }
+
+  function resetSavedUI(){
+    savedBanner.style.display = "none";
+    savedBanner.textContent = "";
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save";
+  }
+
+  function validate(){
+    const formVal = taskEl.value.trim();
     const eqVal = eqEl.value.trim();
-    // const formVal = taskEl.value.trim(); // optional if you want to filter by task too
+    if (!formVal) return "Missing task id. Use ?form=rif or ?id=rif";
+    if (!eqVal) return "Missing equipment id. Use ?eq=TR-001 (or type it above)";
+    return "";
+  }
 
-    if (!eqVal){
-      historyHint.textContent = "Enter an Equipment ID to see history.";
+  // Unlock save when user edits any field
+  ["input","change"].forEach(evt => {
+    eqEl.addEventListener(evt, () => { resetSavedUI(); updateBackLink(); updateHeader(); });
+    document.getElementById("statusSelect").addEventListener(evt, resetSavedUI);
+    document.getElementById("notes").addEventListener(evt, resetSavedUI);
+    document.getElementById("techName").addEventListener(evt, resetSavedUI);
+  });
+
+  // =========================
+  // History (cache + filter)
+  // =========================
+  let historyCache = [];
+
+  function applyHistoryFilter(){
+    const q = (searchInput.value || "").trim().toLowerCase();
+    saveSettings({ search: searchInput.value });
+
+    const filtered = !q ? historyCache : historyCache.filter(d => (
+      (d.eq || "").toLowerCase().includes(q) ||
+      (d.formId || "").toLowerCase().includes(q) ||
+      (d.status || "").toLowerCase().includes(q) ||
+      (d.techName || "").toLowerCase().includes(q) ||
+      (d.notes || "").toLowerCase().includes(q)
+    ));
+
+    if (!filtered.length){
       historyTable.style.display = "none";
       historyBody.innerHTML = "";
+      countChip.style.display = "none";
+      historyHint.style.display = "inline-flex";
+      historyHint.className = "chip warn";
+      historyHint.textContent = historyCache.length ? "No matches for that search." : "No submissions found.";
       return;
     }
 
+    const rows = filtered.map(d => `
+      <tr>
+        <td class="nowrap">${escapeHtml(fmtTime(d.createdAt))}</td>
+        <td class="nowrap">${escapeHtml(d.eq)}</td>
+        <td class="nowrap">${escapeHtml(d.formId)}</td>
+        <td class="nowrap">${escapeHtml(statusLabel(d.status))}</td>
+        <td class="nowrap">${escapeHtml(d.techName)}</td>
+        <td class="notesCell">${escapeHtml(d.notes)}</td>
+      </tr>
+    `);
+
+    historyBody.innerHTML = rows.join("");
+    historyTable.style.display = "table";
+
+    historyHint.style.display = "none";
+    countChip.style.display = "inline-flex";
+    countChip.textContent = `${filtered.length} row${filtered.length === 1 ? "" : "s"}`;
+  }
+
+  async function loadHistory(){
+    const eqVal = eqEl.value.trim();
+    const lim = parseInt(limitSelect.value, 10) || 25;
+    const showAll = !!showAllToggle.checked;
+
+    saveSettings({ limit: lim, showAll });
+
+    historyHint.style.display = "inline-flex";
+    historyHint.className = "chip warn";
     historyHint.textContent = "Loading…";
+    countChip.style.display = "none";
     historyTable.style.display = "none";
     historyBody.innerHTML = "";
 
     try{
-      const q = query(
-        collection(db, "submissions"),
-        where("eq", "==", eqVal),
-        // where("formId", "==", formVal), // OPTIONAL: filter by task too
-        orderBy("createdAt", "desc"),
-        limit(25)
-      );
+      let qref;
 
-      const snap = await getDocs(q);
+      if (showAll){
+        // All equipment: latest submissions across everything
+        qref = query(
+          collection(db, "submissions"),
+          orderBy("createdAt", "desc"),
+          limit(lim)
+        );
+      } else {
+        // Per-equipment
+        if (!eqVal){
+          historyCache = [];
+          historyHint.className = "chip warn";
+          historyHint.textContent = "Enter an Equipment ID or toggle “Show All Equipment”.";
+          return;
+        }
+        qref = query(
+          collection(db, "submissions"),
+          where("eq", "==", eqVal),
+          orderBy("createdAt", "desc"),
+          limit(lim)
+        );
+      }
 
-      if (snap.empty){
-        historyHint.textContent = "No submissions found yet for this equipment.";
+      const snap = await getDocs(qref);
+      historyCache = snap.docs.map(d => d.data());
+
+      if (!historyCache.length){
+        historyHint.className = "chip warn";
+        historyHint.textContent = showAll
+          ? "No submissions found yet."
+          : "No submissions found yet for this equipment.";
         return;
       }
 
-      const rows = [];
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        rows.push(`
-          <tr>
-            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
-              ${escapeHtml(fmtTime(d.createdAt))}
-            </td>
-            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
-              ${escapeHtml(d.eq)}
-            </td>
-            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
-              ${escapeHtml(d.formId)}
-            </td>
-            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
-              ${escapeHtml(d.status)}
-            </td>
-            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15); white-space:nowrap;">
-              ${escapeHtml(d.techName)}
-            </td>
-            <td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.15);">
-              ${escapeHtml(d.notes)}
-            </td>
-          </tr>
-        `);
-      });
-
-      historyBody.innerHTML = rows.join("");
-      historyHint.textContent = "";
-      historyTable.style.display = "table";
+      applyHistoryFilter();
+      setLastAction(`Loaded history (${historyCache.length})`);
     } catch(e){
       console.error(e);
-      historyHint.textContent = `History load error: ${e.code || ""} ${e.message || e}`;
-      historyTable.style.display = "none";
+      historyCache = [];
+      historyHint.className = "chip bad";
+      historyHint.textContent = `History error: ${e.code || ""} ${e.message || e}`;
+      setLastAction("History load failed");
     }
   }
 
   // =========================
-  // 4) Save submission (Option 3 + 4)
+  // Save submission
   // =========================
   async function save(){
     const err = validate();
-    if (err){ setStatus(err, "bad"); return; }
+    if (err){ setStatus(err, "bad"); setLastAction("Validation failed"); return; }
 
     const payload = {
       eq: eqEl.value.trim(),
@@ -406,58 +620,160 @@
     };
 
     saveBtn.disabled = true;
-    setStatus("Saving…", "");
+    setStatus("Saving…", "warn");
+    setLastAction("Saving…");
 
     try{
       await addDoc(collection(db, "submissions"), payload);
 
-      // ✅ Option 3: persistent banner
-      savedBanner.style.display = "block";
+      savedBanner.style.display = "inline-flex";
       savedBanner.textContent = `✔ Saved at ${new Date().toLocaleTimeString()}`;
 
-      // ✅ Option 4: lock button after success
       saveBtn.textContent = "Saved ✔";
       saveBtn.disabled = true;
 
       setStatus("", "");
+      setLastAction("Saved");
 
-      // Refresh history after save
-      loadHistory();
+      await loadHistory();
     } catch(e){
       console.error(e);
       setStatus(`Error saving: ${e.code || ""} ${e.message || e}`, "bad");
       saveBtn.disabled = false;
+      setLastAction("Save failed");
     }
   }
 
-  function clear(){
+  function clearForm(){
     document.getElementById("statusSelect").value = "complete";
     document.getElementById("notes").value = "";
     document.getElementById("techName").value = "";
     resetSavedUI();
     setStatus("", "");
+    setLastAction("Cleared form");
   }
 
-  // Re-enable save when user edits anything
-  ["input","change"].forEach(evt => {
-    eqEl.addEventListener(evt, resetSavedUI);
-    document.getElementById("statusSelect").addEventListener(evt, resetSavedUI);
-    document.getElementById("notes").addEventListener(evt, resetSavedUI);
-    document.getElementById("techName").addEventListener(evt, resetSavedUI);
-  });
+  // =========================
+  // PDF Export (All submissions)
+  // =========================
+  async function fetchAllSubmissionsPaged(pageSize = 500, maxDocs = 5000){
+    const all = [];
+    let last = null;
 
-  // Refresh history when equipment changes
-  eqEl.addEventListener("change", loadHistory);
+    while (all.length < maxDocs){
+      let qref = query(
+        collection(db, "submissions"),
+        orderBy("createdAt", "desc"),
+        limit(pageSize)
+      );
+      if (last){
+        qref = query(
+          collection(db, "submissions"),
+          orderBy("createdAt", "desc"),
+          startAfter(last),
+          limit(pageSize)
+        );
+      }
 
+      const snap = await getDocs(qref);
+      if (snap.empty) break;
+
+      snap.forEach(d => all.push(d.data()));
+      last = snap.docs[snap.docs.length - 1];
+      if (snap.size < pageSize) break;
+
+      setStatus(`Exporting… pulled ${all.length} records`, "warn");
+    }
+
+    return all;
+  }
+
+  function lineForPdf(s, idx){
+    const created =
+      s.createdAt?.toDate?.() ? s.createdAt.toDate().toLocaleString() :
+      (s.createdAt ? String(s.createdAt) : "");
+    const base = `${idx + 1}. [${created}] eq=${s.eq || ""} task=${s.formId || ""} status=${statusLabel(s.status)}`;
+    const tech = s.techName ? `\n   tech: ${s.techName}` : "";
+    const notes = s.notes ? `\n   notes: ${s.notes}` : "";
+    return base + tech + notes;
+  }
+
+  async function exportAllPdf(){
+    exportPdfBtn.disabled = true;
+    setStatus("Building PDF…", "warn");
+    setLastAction("Exporting PDF…");
+
+    try{
+      const MAX_DOCS = 5000; // increase carefully
+      const submissions = await fetchAllSubmissionsPaged(500, MAX_DOCS);
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+      const left = 40, top = 40, lineHeight = 14, pageBottom = 740;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("NEXUS Submissions Report (All)", left, top);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, left, top + 18);
+      doc.text(`Total included: ${submissions.length}${submissions.length >= MAX_DOCS ? " (capped)" : ""}`, left, top + 34);
+
+      let y = top + 60;
+      doc.setFontSize(9);
+
+      for (let i = 0; i < submissions.length; i++){
+        const text = lineForPdf(submissions[i], i);
+        const wrapped = doc.splitTextToSize(text, 540);
+
+        for (const line of wrapped){
+          if (y > pageBottom){
+            doc.addPage();
+            y = top;
+          }
+          doc.text(line, left, y);
+          y += lineHeight;
+        }
+        y += 6;
+
+        // Lightweight progress update every 200 rows
+        if (i > 0 && i % 200 === 0){
+          setStatus(`Building PDF… ${i}/${submissions.length}`, "warn");
+        }
+      }
+
+      const filename = `submissions-report-${new Date().toISOString().slice(0,10)}.pdf`;
+      doc.save(filename);
+
+      setStatus("PDF downloaded. Attach it to an email.", "ok");
+      setLastAction("PDF exported");
+    } catch(e){
+      console.error(e);
+      setStatus(`Export error: ${e.code || ""} ${e.message || e}`, "bad");
+      setLastAction("PDF export failed");
+    } finally{
+      exportPdfBtn.disabled = false;
+    }
+  }
+
+  // =========================
+  // Wire up events
+  // =========================
   saveBtn.addEventListener("click", save);
-  clearBtn.addEventListener("click", clear);
+  clearBtn.addEventListener("click", clearForm);
+  refreshBtn.addEventListener("click", loadHistory);
+  exportPdfBtn.addEventListener("click", exportAllPdf);
 
-  // Load history on page load
-  loadHistory();
+  eqEl.addEventListener("change", loadHistory);
+  limitSelect.addEventListener("change", loadHistory);
+  searchInput.addEventListener("input", applyHistoryFilter);
+  showAllToggle.addEventListener("change", loadHistory);
 
-  // Optional: show initial validation error (kept, but doesn’t affect banner)
+  // initial UI
   const initialErr = validate();
-  if (initialErr) setStatus(initialErr, "bad");
+  if (initialErr) setStatus(initialErr, "warn");
+  loadHistory();
 </script>
 </body>
 </html>
