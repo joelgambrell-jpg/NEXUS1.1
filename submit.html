@@ -73,7 +73,6 @@
     opacity:0.95;
     margin:0 0 12px;
   }
-
   .row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
   @media (max-width:720px){ .row{ grid-template-columns:1fr; } }
 
@@ -89,7 +88,22 @@
     background:rgba(255,255,255,0.92);
     color:#111;
   }
-  textarea{ min-height:120px; resize:vertical; }
+
+  /* ✅ Excel-style grid lines for Record Data box */
+  textarea{
+    min-height:120px;
+    resize:vertical;
+    background-color:#fff;
+    background-image:
+      linear-gradient(#e0e0e0 1px, transparent 1px),
+      linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+    background-size:
+      100% 24px,
+      120px 100%;
+    line-height:24px;
+    padding:8px 10px;
+    font-family: Consolas, "Courier New", monospace;
+  }
 
   .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
   .btn{
@@ -135,6 +149,7 @@
   .chip.muted{ opacity:0.9; }
 
   .hint{ margin-top:10px; opacity:0.9; font-size:13px; line-height:1.35; }
+
   .toolbar{
     display:flex;
     flex-wrap:wrap;
@@ -182,9 +197,16 @@
     vertical-align:top;
   }
   tbody tr:hover{ background:rgba(255,255,255,0.06); }
-
   .nowrap{ white-space:nowrap; }
-  .notesCell{ max-width:460px; }
+
+  /* ✅ No truncation / no "show more" behavior */
+  .notesCell{
+    white-space: normal;
+    word-break: break-word;
+    max-width:none;
+    line-height:1.35;
+  }
+
   .stickyBar{
     position:fixed; left:0; right:0; bottom:0;
     background:rgba(0,0,0,0.55);
@@ -245,6 +267,50 @@
           <label for="techName">Technician Name</label>
           <input id="techName" type="text" placeholder="Name (optional)">
         </div>
+      </div>
+
+      <!-- ✅ Torque-only table (shows only when Task is torque) -->
+      <div id="torqueGrid" style="display:none; margin-top:14px;">
+        <div class="hint" style="margin:0 0 10px;">
+          Torque job: fill this grid (then record details in Notes if needed).
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; background:#fff; color:#000; border-radius:12px; overflow:hidden;">
+          <tbody>
+            <tr>
+              <td style="border:2px solid #000; font-weight:800; padding:10px;">Pre Torque Tilt Test</td>
+              <td style="border:2px solid #000; font-weight:800; padding:10px; width:160px;">Date:</td>
+              <td style="border:2px solid #000; font-weight:800; padding:10px; width:220px;">Technician:</td>
+            </tr>
+
+            <tr>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">Phase to Phase</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">A‑B</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">A‑C</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">B‑C</td>
+            </tr>
+
+            <tr>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">Phase to Ground</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">A‑G</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">B‑G</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">C‑G</td>
+            </tr>
+
+            <tr>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">Phase to Neutral</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">A‑N</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">B‑N</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">C‑N</td>
+            </tr>
+
+            <tr>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">Neutral to Ground</td>
+              <td style="border:1px solid #000; font-weight:800; padding:10px;">N‑G</td>
+              <td colspan="2" style="border:1px solid #000; padding:10px;"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <label for="notes">Notes</label>
@@ -317,6 +383,7 @@
         </table>
       </div>
     </section>
+
   </div>
 
   <footer>
@@ -383,6 +450,8 @@
   const stickyEq   = document.getElementById("stickyEq");
   const stickyLast = document.getElementById("stickyLast");
 
+  const torqueGrid = document.getElementById("torqueGrid");
+
   // =========================
   // Apply initial values + persisted settings
   // =========================
@@ -407,8 +476,14 @@
     stickyEq.textContent = `Equipment: ${eqVal || "—"}`;
   }
 
+  function updateTorqueUI(){
+    const task = taskEl.value.trim().toLowerCase();
+    torqueGrid.style.display = (task === "torque") ? "block" : "none";
+  }
+
   updateHeader();
   updateBackLink();
+  updateTorqueUI();
 
   // =========================
   // Firebase setup
@@ -453,7 +528,6 @@
     if (v === "issue") return "Issue";
     return v || "";
   }
-
   function setStatus(text, type){
     if (!text){
       statusMsg.style.display = "none";
@@ -465,18 +539,15 @@
     statusMsg.textContent = text;
     statusMsg.className = "chip " + (type || "muted");
   }
-
   function setLastAction(text){
     stickyLast.textContent = `Last action: ${text}`;
   }
-
   function resetSavedUI(){
     savedBanner.style.display = "none";
     savedBanner.textContent = "";
     saveBtn.disabled = false;
     saveBtn.textContent = "Save";
   }
-
   function validate(){
     const formVal = taskEl.value.trim();
     const eqVal = eqEl.value.trim();
@@ -557,14 +628,12 @@
       let qref;
 
       if (showAll){
-        // All equipment: latest submissions across everything
         qref = query(
           collection(db, "submissions"),
           orderBy("createdAt", "desc"),
           limit(lim)
         );
       } else {
-        // Per-equipment
         if (!eqVal){
           historyCache = [];
           historyHint.className = "chip warn";
@@ -666,6 +735,7 @@
         orderBy("createdAt", "desc"),
         limit(pageSize)
       );
+
       if (last){
         qref = query(
           collection(db, "submissions"),
@@ -680,6 +750,7 @@
 
       snap.forEach(d => all.push(d.data()));
       last = snap.docs[snap.docs.length - 1];
+
       if (snap.size < pageSize) break;
 
       setStatus(`Exporting… pulled ${all.length} records`, "warn");
@@ -704,13 +775,14 @@
     setLastAction("Exporting PDF…");
 
     try{
-      const MAX_DOCS = 5000; // increase carefully
+      const MAX_DOCS = 5000;
       const submissions = await fetchAllSubmissionsPaged(500, MAX_DOCS);
 
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "pt", format: "letter" });
 
       const left = 40, top = 40, lineHeight = 14, pageBottom = 740;
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.text("NEXUS Submissions Report (All)", left, top);
@@ -735,9 +807,9 @@
           doc.text(line, left, y);
           y += lineHeight;
         }
+
         y += 6;
 
-        // Lightweight progress update every 200 rows
         if (i > 0 && i % 200 === 0){
           setStatus(`Building PDF… ${i}/${submissions.length}`, "warn");
         }
@@ -777,4 +849,3 @@
 </script>
 </body>
 </html>
-
