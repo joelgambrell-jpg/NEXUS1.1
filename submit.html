@@ -242,29 +242,15 @@
       <label for="notes">Notes</label>
       <textarea id="notes" placeholder="Record Data"></textarea>
 
-      <!-- ✅ Torque-only (fillable) section -->
+      <!-- ✅ Torque-only readings section (NO Pre Torque Tilt Test header row) -->
       <div id="torqueGrid" style="display:none; margin-top:14px;">
         <div class="hint" style="margin:0 0 10px;">
-          Torque job: click Good/Bad (✓ / ✗) and enter readings. This will be appended into Notes when you Save.
+          Torque readings: fill these out. On Save, they are appended into Notes automatically.
         </div>
 
         <div style="overflow:auto;">
           <table style="width:100%; border-collapse:collapse; background:#fff; color:#000; border-radius:12px; overflow:hidden;">
             <tbody>
-              <tr>
-                <td style="border:2px solid #000; font-weight:900; padding:10px;">Pre Torque Tilt Test</td>
-                <td style="border:2px solid #000; font-weight:900; padding:10px;">
-                  Date:
-                  <input id="torqueDate" type="text" placeholder="MM/DD/YYYY"
-                    style="margin-left:8px; width:140px; padding:6px 8px; border:1px solid #000; border-radius:8px;">
-                </td>
-                <td style="border:2px solid #000; font-weight:900; padding:10px;">
-                  Technician:
-                  <input id="torqueTech" type="text" placeholder="Name"
-                    style="margin-left:8px; width:180px; padding:6px 8px; border:1px solid #000; border-radius:8px;">
-                </td>
-              </tr>
-
               <tr>
                 <td style="border:1px solid #000; font-weight:900; padding:10px; background:#f3f3f3;">Test</td>
                 <td style="border:1px solid #000; font-weight:900; padding:10px; background:#f3f3f3;">Pair</td>
@@ -602,6 +588,7 @@
   updateHeader();
   updateBackLink();
 
+  // Torque shows only if task == "torque"
   function updateTorqueUI(){
     const t = taskEl.value.trim().toLowerCase();
     torqueGrid.style.display = (t === "torque") ? "block" : "none";
@@ -680,7 +667,7 @@
   }
 
   // =========================
-  // Torque helpers (Good/Bad + summary)
+  // Torque helpers (Good/Bad + summary -> Notes)
   // =========================
   function wireGoodBadButtons(){
     document.querySelectorAll("#torqueGrid .gb").forEach(group => {
@@ -712,17 +699,13 @@
     });
   }
 
+  // ✅ This builds the readings block that is appended into Notes on Save
   function buildTorqueSummary(){
     const task = taskEl.value.trim().toLowerCase();
     if (task !== "torque") return "";
 
-    const date = (document.getElementById("torqueDate")?.value || "").trim();
-    const tech = (document.getElementById("torqueTech")?.value || "").trim();
-
     const lines = [];
-    lines.push("=== TORQUE TEST ===");
-    if (date) lines.push(`Date: ${date}`);
-    if (tech) lines.push(`Technician: ${tech}`);
+    lines.push("=== TORQUE READINGS ===");
 
     document.querySelectorAll("#torqueGrid .torqueVal").forEach(inp => {
       const label = inp.getAttribute("data-label") || "Reading";
@@ -750,7 +733,7 @@
       lines.push(`${mapLabel[key] || key}: ${v === "good" ? "GOOD" : "BAD"}`);
     });
 
-    lines.push("===================");
+    lines.push("======================");
     return lines.join("\n");
   }
 
@@ -760,7 +743,8 @@
     document.getElementById("statusSelect").addEventListener(evt, resetSavedUI);
     document.getElementById("notes").addEventListener(evt, resetSavedUI);
     document.getElementById("techName").addEventListener(evt, resetSavedUI);
-    // torque inputs:
+
+    // torque inputs
     document.querySelectorAll("#torqueGrid input, #torqueGrid textarea, #torqueGrid select").forEach(el=>{
       el.addEventListener(evt, resetSavedUI);
     });
@@ -870,7 +854,7 @@
   }
 
   // =========================
-  // Save submission
+  // Save submission (append readings to Notes)
   // =========================
   async function save(){
     const err = validate();
@@ -919,9 +903,8 @@
     document.getElementById("statusSelect").value = "complete";
     document.getElementById("notes").value = "";
     document.getElementById("techName").value = "";
+
     // torque clears
-    document.getElementById("torqueDate") && (document.getElementById("torqueDate").value = "");
-    document.getElementById("torqueTech") && (document.getElementById("torqueTech").value = "");
     document.querySelectorAll("#torqueGrid .torqueVal").forEach(i => i.value = "");
     document.querySelectorAll("#torqueGrid .gbHidden").forEach(h => h.value = "");
     document.querySelectorAll("#torqueGrid .gb").forEach(group => {
