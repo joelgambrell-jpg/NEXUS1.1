@@ -12,7 +12,6 @@ body{
   background:#b60000;
   color:#fff;
 }
-
 .container{
   max-width:900px;
   margin:40px auto;
@@ -22,7 +21,6 @@ body{
   backdrop-filter:blur(6px);
   text-align:center;
 }
-
 .back{
   color:#fff;
   text-decoration:none;
@@ -30,10 +28,8 @@ body{
   display:inline-block;
   margin-bottom:20px;
 }
-
 h1{ margin:0; font-size:32px; }
 .sub{ font-size:18px; font-weight:800; margin:10px 0 18px; }
-
 .btn{
   display:block;
   margin:20px auto;
@@ -52,7 +48,7 @@ h1{ margin:0; font-size:32px; }
 <body>
 <div class="container">
 
-<a class="back" href="equipment.html">← Back to Equipment</a>
+<a class="back" id="backLink" href="equipment.html">← Back to Equipment</a>
 
 <h1 id="taskTitle">Loading…</h1>
 <div class="sub" id="eqLabel"></div>
@@ -64,29 +60,64 @@ h1{ margin:0; font-size:32px; }
 <script src="task-config.js"></script>
 <script>
   const qs = new URLSearchParams(location.search);
-  const id = qs.get("id");
-  const eq = qs.get("eq") || "";
+  const id = (qs.get("id") || "").trim();     // task id (rif, torque, etc.)
+  const eq = (qs.get("eq") || "").trim();     // equipment id (TR-001, etc.)
+
+  const taskTitleEl = document.getElementById("taskTitle");
+  const eqLabelEl = document.getElementById("eqLabel");
+  const linksEl = document.getElementById("links");
+  const backLink = document.getElementById("backLink");
+
+  // Keep eq when going back
+  backLink.href = `equipment.html${eq ? `?eq=${encodeURIComponent(eq)}` : ""}`;
 
   if (!id || !window.TASKS || !TASKS[id]) {
-    document.getElementById("taskTitle").textContent = "Invalid task";
-    return;
+    taskTitleEl.textContent = "Invalid task";
+    eqLabelEl.textContent = eq ? `Equipment: ${eq}` : "";
+    // Provide a fallback button to submit if you want:
+    // linksEl.innerHTML = `<a class="btn" href="submit.html?form=${encodeURIComponent(id)}&eq=${encodeURIComponent(eq)}">Go to Submit</a>`;
+    throw new Error("Invalid task id or TASKS config missing.");
   }
 
   const cfg = TASKS[id];
   document.title = cfg.title;
-  document.getElementById("taskTitle").textContent = cfg.title;
-  document.getElementById("eqLabel").textContent = eq ? `Equipment: ${eq}` : "";
+  taskTitleEl.textContent = cfg.title;
+  eqLabelEl.textContent = eq ? `Equipment: ${eq}` : "";
 
-  const links = document.getElementById("links");
+  // Helper: take a configured href and ensure eq is included.
+  // If destination is submit.html and no form param exists, add form=<id>.
+  function withEqAndMaybeForm(rawHref) {
+    // Allow relative URLs
+    const u = new URL(rawHref, location.href);
 
+    // Always carry eq if we have it
+    if (eq) u.searchParams.set("eq", eq);
+
+    // If going to submit.html, ensure form is present
+    const path = u.pathname.split("/").pop();
+    if (path === "submit.html") {
+      if (!u.searchParams.get("form") && !u.searchParams.get("id")) {
+        u.searchParams.set("form", id);
+      }
+    }
+
+    // Return relative URL (keeps site paths clean on GitHub Pages)
+    return u.pathname.split("/").pop() + (u.search ? u.search : "") + (u.hash ? u.hash : "");
+  }
+
+  // Build buttons
   cfg.links.forEach(l => {
     const a = document.createElement("a");
     a.className = "btn";
     a.textContent = l.text;
-    a.href = l.href;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    links.appendChild(a);
+
+    a.href = withEqAndMaybeForm(l.href);
+
+    // If you want same-tab navigation (recommended for mobile), comment these out:
+    // a.target = "_blank";
+    // a.rel = "noopener noreferrer";
+
+    linksEl.appendChild(a);
   });
 </script>
 
