@@ -6,126 +6,153 @@
 <title>Task</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#b60000;
-  color:#fff;
-}
-.container{
-  max-width:900px;
-  margin:40px auto;
-  background:rgba(255,255,255,0.20);
-  padding:30px;
-  border-radius:18px;
-  backdrop-filter:blur(6px);
-  text-align:center;
-}
-.back{
-  color:#fff;
-  text-decoration:none;
-  font-weight:bold;
-  display:inline-block;
-  margin-bottom:20px;
-}
-h1{ margin:0; font-size:32px; }
-.sub{ font-size:18px; font-weight:800; margin:10px 0 18px; }
-.btn{
-  display:block;
-  margin:20px auto;
-  padding:16px 50px;
-  font-size:20px;
-  font-weight:700;
-  border-radius:999px;
-  text-decoration:none;
-  color:#3ecbff;
-  background:#0a0f24;
-  border:2px solid #00c2ff;
-}
+  body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#b60000;
+    color:#fff;
+  }
+
+  .container{
+    max-width:900px;
+    margin:40px auto;
+    background:rgba(255,255,255,0.20);
+    padding:30px;
+    border-radius:18px;
+    backdrop-filter:blur(6px);
+    text-align:center;
+  }
+
+  .back{
+    color:#fff;
+    text-decoration:none;
+    font-weight:bold;
+    display:inline-block;
+    margin-bottom:20px;
+  }
+
+  h1{ margin:0; font-size:32px; }
+  .sub{ font-size:18px; font-weight:800; margin:10px 0 18px; }
+
+  .btn{
+    display:block;
+    margin:20px auto;
+    padding:16px 50px;
+    font-size:20px;
+    font-weight:700;
+    border-radius:999px;
+    text-decoration:none;
+    color:#3ecbff;
+    background:#0a0f24;
+    border:2px solid #00c2ff;
+  }
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<a class="back" id="backLink" href="equipment.html">← Back to Equipment</a>
+  <a class="back" id="backLink" href="equipment.html">← Back to Equipment</a>
 
-<h1 id="taskTitle">Loading…</h1>
-<div class="sub" id="eqLabel"></div>
+  <h1 id="taskTitle">Loading…</h1>
+  <div class="sub" id="eqLabel"></div>
 
-<div id="links"></div>
+  <div id="links"></div>
 
 </div>
 
 <script>
-/* Task definitions (edit links as needed) */
-window.TASKS = {
-  rif: {
-    title: "Receipt Inspection Form",
-    links: [
-      { text: "Receipt Inspection Spreadsheet", href: "https://NEW_LINK_HERE" },
-      { text: "RIF Instructions", href: "https://NEW_LINK_HERE" }
-    ]
-  },
-  lvt: {
-    title: "Megohmmeter Testing",
-    links: [
-      { text: "Meg Test – Line Side", href: "https://NEW_LINK_HERE" },
-      { text: "Meg Test – Load Side", href: "https://NEW_LINK_HERE" }
-    ]
-  },
-  torque: {
-    title: "Torque",
-    links: [
-      { text: "Torque Log", href: "submit.html?form=torque" }
-    ]
-  }
-};
-</script>
+  /**
+   * IMPORTANT:
+   * This file is SELF-CONTAINED to avoid task-config.js loading issues on GitHub Pages.
+   * Replace NEW_LINK_HERE with real links.
+   */
+  window.TASKS = {
+    rif: {
+      title: "Receipt Inspection Form",
+      links: [
+        { text: "Receipt Inspection Spreadsheet", href: "https://NEW_LINK_HERE" },
+        { text: "RIF Instructions", href: "https://NEW_LINK_HERE" }
+      ]
+    },
 
-<script>
+    lvt: {
+      title: "Megohmmeter Testing",
+      links: [
+        { text: "Meg Test – Line Side", href: "https://NEW_LINK_HERE" },
+        { text: "Meg Test – Load Side", href: "https://NEW_LINK_HERE" }
+      ]
+    },
+
+    torque: {
+      title: "Torque",
+      links: [
+        { text: "Torque Log", href: "submit.html?form=torque" }
+      ]
+    }
+  };
+
+  // =========================
+  // Read URL params
+  // =========================
   const qs = new URLSearchParams(location.search);
-  const id = (qs.get("id") || "").trim();
-  const eq = (qs.get("eq") || "").trim();
+  const id = (qs.get("id") || "").trim();   // rif, lvt, torque, etc.
+  const eq = (qs.get("eq") || "").trim();   // TR-001, etc.
 
+  const backLink = document.getElementById("backLink");
   const taskTitleEl = document.getElementById("taskTitle");
   const eqLabelEl = document.getElementById("eqLabel");
   const linksEl = document.getElementById("links");
-  const backLink = document.getElementById("backLink");
 
+  // Preserve eq on back navigation
   backLink.href = `equipment.html${eq ? `?eq=${encodeURIComponent(eq)}` : ""}`;
 
+  // Validate
   if (!id || !window.TASKS || !TASKS[id]) {
     document.title = "Invalid task";
     taskTitleEl.textContent = "Invalid task";
     eqLabelEl.textContent = eq ? `Equipment: ${eq}` : "";
-    throw new Error("Invalid task id or TASKS missing.");
+    throw new Error("Invalid task id or TASKS config missing.");
   }
 
+  // Load task
   const cfg = TASKS[id];
   document.title = cfg.title;
   taskTitleEl.textContent = cfg.title;
   eqLabelEl.textContent = eq ? `Equipment: ${eq}` : "";
 
+  /**
+   * Ensure eq is carried forward.
+   * If destination is submit.html and form is missing, add form=<id>.
+   */
   function addEqAndMaybeForm(rawHref) {
     const u = new URL(rawHref, location.href);
 
+    // Always carry eq if present
     if (eq) u.searchParams.set("eq", eq);
 
     const file = u.pathname.split("/").pop();
+
+    // If submit.html, ensure form exists
     if (file === "submit.html") {
       if (!u.searchParams.get("form") && !u.searchParams.get("id")) {
         u.searchParams.set("form", id);
       }
+      // Return relative URL (works well on GitHub Pages)
       return file + (u.search || "") + (u.hash || "");
     }
 
-    const isInternal = file.endsWith(".html") && (u.origin === location.origin);
-    if (isInternal) return file + (u.search || "") + (u.hash || "");
+    // Internal HTML pages: return relative
+    const isInternalHtml = file.endsWith(".html") && (u.origin === location.origin);
+    if (isInternalHtml) {
+      return file + (u.search || "") + (u.hash || "");
+    }
 
+    // External link: return full URL (eq appended if present)
     return u.toString();
   }
 
+  // Render links
   cfg.links.forEach(l => {
     const a = document.createElement("a");
     a.className = "btn";
