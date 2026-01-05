@@ -1,7 +1,7 @@
 (function () {
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
-  const eq = params.get("eq") || ""; // ✅ STEP 3: equipment id from URL
+  const eq = (params.get("eq") || "").trim(); // ✅ equipment id from URL
 
   if (!id || !window.FORMS || !window.FORMS[id]) {
     document.body.innerHTML =
@@ -18,7 +18,7 @@
   document.getElementById("page-title").textContent = cfg.title || "";
   document.getElementById("section-title").textContent = cfg.sectionTitle || "";
 
-  // ✅ STEP 3: show equipment label (if element exists in form.html)
+  // ✅ show equipment label (if element exists in form.html)
   const eqLabel = document.getElementById("eqLabel");
   if (eqLabel) eqLabel.textContent = eq ? `Equipment: ${eq}` : "";
 
@@ -34,7 +34,36 @@
     if (cfg.completedKey) localStorage.setItem(cfg.completedKey, "true");
   }
 
-  // ===== EMBED MODE (kept for other pages if you use it) =====
+  // =========================
+  // Helper: add eq to INTERNAL links only
+  // =========================
+  function withEq(href) {
+    if (!eq || !href) return href;
+
+    // Never touch full external URLs
+    if (/^https?:\/\//i.test(href)) return href;
+
+    // Build absolute URL from current page for reliable parsing
+    const u = new URL(href, location.href);
+
+    // Only patch links that stay on THIS site
+    if (u.origin !== location.origin) return href;
+
+    // Always carry eq forward
+    u.searchParams.set("eq", eq);
+
+    // Nice-to-have: if someone links to submit.html without form param, add it from current id
+    if (u.pathname.endsWith("/submit.html") || u.pathname.endsWith("submit.html")) {
+      if (!u.searchParams.get("form") && !u.searchParams.get("id")) {
+        u.searchParams.set("form", id);
+      }
+    }
+
+    // Return a relative link (keeps your URLs clean)
+    return u.pathname + u.search + u.hash;
+  }
+
+  // ===== EMBED MODE =====
   if (cfg.embedUrl) {
     buttonsWrap.style.display = "none";
     mediaEl.style.display = "block";
@@ -47,23 +76,18 @@
   if (cfg.imageUrl) {
     buttonsWrap.style.display = "none";
     mediaEl.style.display = "block";
-
-    // Fast render: show image inline
     mediaEl.innerHTML = `
       <img id="mainImg" src="${cfg.imageUrl}" alt="${cfg.title || "Image"}" style="max-width:100%;border-radius:18px;cursor:zoom-in;">
       <div style="margin-top:12px;">
         <a class="btn" href="${cfg.imageUrl}" target="_blank" rel="noopener noreferrer">Open Image in New Tab</a>
       </div>
     `;
-
     markDone();
 
-    // If magnifier enabled, open modal + lens on click (fast, no iframe)
     if (cfg.magnifier) {
       const img = document.getElementById("mainImg");
       const zoom = Number(cfg.zoom || 4);
 
-      // Build modal once
       const modal = document.createElement("div");
       modal.className = "nx-modal";
       modal.innerHTML = `
@@ -80,7 +104,6 @@
       const homeBtn = modal.querySelector(".nx-return-home");
       const modalImg = modal.querySelector("#nxModalImg");
       const magnifier = modal.querySelector("#nxMagnifier");
-
       let moveFn = null;
 
       function getCursorPos(e) {
@@ -95,7 +118,6 @@
       function magnify(imgEl, z) {
         const glass = magnifier;
         const bw = 6;
-
         const iw = imgEl.width;
         const ih = imgEl.height;
 
@@ -153,19 +175,14 @@
 
       img.addEventListener("click", openModal);
       closeBtn.addEventListener("click", closeModal);
-
       homeBtn.addEventListener("click", () => {
         closeModal();
-        window.location.href = "index.html";
+        // Keep eq when going home (optional)
+        window.location.href = eq ? `index.html?eq=${encodeURIComponent(eq)}` : "index.html";
       });
 
-      modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal();
-      });
-
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && modal.style.display === "flex") closeModal();
-      });
+      modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal.style.display === "flex") closeModal(); });
     }
 
     return;
@@ -182,21 +199,10 @@
     a.textContent = b.text || "Open";
     a.href = b.href || "#";
 
-    // ✅ Carry eq through internal links created in config (e.g. "?id=transformer")
-    if (eq) {
-      // If config uses "?id=xyz" (internal jump)
-      if (typeof b.href === "string" && b.href.startsWith("?id=")) {
-        a.href = `form.html${b.href}&eq=${encodeURIComponent(eq)}`;
-      }
+    // ✅ Always carry eq on internal links
+    a.href = withEq(a.href);
 
-      // If config uses "form.html?id=xyz"
-      if (a.href.includes("form.html?id=")) {
-        const u = new URL(a.href, location.href);
-        u.searchParams.set("eq", eq);
-        a.href = u.pathname + u.search;
-      }
-    }
-
+    // External links open new tab (internal links stay same tab)
     if (/^https?:\/\//i.test(a.href)) {
       a.target = "_blank";
       a.rel = "noopener noreferrer";
